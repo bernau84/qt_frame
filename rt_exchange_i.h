@@ -14,6 +14,11 @@ public:
     virtual double f_a(unsigned i) = 0;
     virtual double f_f(unsigned i) = 0;
 
+    /*! access raw data */
+    virtual const double *f_t() = 0;
+    virtual const double *f_a() = 0;
+    virtual const double *f_f() = 0;
+
 /*! \todo ideas
 
      typedef struct {

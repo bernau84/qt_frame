@@ -17,21 +17,26 @@ class t_rt_audioinput_ex : public i_rt_exchange {
 private:
     friend class t_rt_audioinput;
 
-    QVector<uint16_t> a;
+    QVector<int16_t> a;
     double t;
     double f;
 
     /*! length of individual array */
     virtual int n(){ return a.size(); }
 
-    /*! pointer to array */
+    /*! indexed acces */
     virtual double f_t(unsigned i){ return (f > 0) ? (t + ((i+1) / f)) : t; }
-    virtual double f_a(unsigned i){ return (1.0 * a[i]) / (2 << 15); }
+    virtual double f_a(unsigned i){ return (1.0 * a[i]) / (1 << 15); }
     virtual double f_f(unsigned i){ i = i; return f; }
+
+    /*! pointer to array */
+    virtual const double *f_a(){ return NULL; }  //nemame - mame jen u16
+    virtual const double *f_f(){ return NULL; }
+    virtual const double *f_t(){ return NULL; }
 
     t_rt_audioinput_ex(){}
     virtual ~t_rt_audioinput_ex(){
-        LOG(TRACE) << "released";
+        // LOG(TRACE) << "released";
     }
 };
 
@@ -54,26 +59,34 @@ private:
     }
 
     /*! here do the work */
-    virtual int proc(const i_rt_exchange *p){
+    virtual int proc(i_rt_exchange *p){
 
         Q_UNUSED(p);
 
-        qint64 len = 0;
+        qint64 samples, len = 0;
 
         if((m_data = new t_rt_audioinput_ex()))  //alokujem novy buffer - stary se uvolni diky SharedPnt
             if((len = m_audioInput->bytesReady())){
 
-                m_data->a.resize(len);
+                samples = len / (m_format.sampleSize()/8);
+                m_data->a.resize(samples);  //reserve space
+
                 if((len = m_input->read((char *)m_data->a.data(), len))){
 
-                    m_data->f = 8000;
+                    m_data->f = m_format.sampleRate() / 2;  //rozliseni jednoho vzorku je nyguistovka
                     m_data->t = m_t;
-
+#if 1
+                    double rms = 0;
+                    for(int i=0; i<samples; i++) rms += pow(m_data->a[i], 2);
+                    rms = sqrt(rms) / len;
+                    LOG(INFO) << "rms=" << rms;
+#endif //1
                     QSharedPointer<i_rt_exchange> pp(m_data);
                     emit update(pp);
 
                     //pripravime pristi casovou znacku
-                    m_t += m_data->t + (m_data->n() / m_data->f);
+                    m_t += (1.0 * samples) / m_format.sampleRate();
+                    LOG(INFO) << m_t << "[s]/" << samples << "samples" ;
                 }
             }
 
@@ -113,6 +126,7 @@ public:
             m_format = m_device.nearestFormat(m_format);
         }
 
+        LOG(INFO) << m_device.deviceName();
         m_audioInput = new QAudioInput(m_device, m_format, this);
 
         m_input = m_audioInput->start();

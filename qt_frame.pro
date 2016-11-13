@@ -9,7 +9,7 @@ DEFINES += ELPP_QT_LOGGING    \
 CONFIG += c++11
 
 TARGET = qt_frame
-CONFIG += console
+#CONFIG += console
 CONFIG -= app_bundle
 
 TEMPLATE = app
@@ -20,4 +20,7 @@ HEADERS += \
     rt_setup.h \
     rt_exchange_i.h \
     rt_base_a.h \
-    rt_audioinput.h
+    rt_audioinput.h \
+    rt_recorder.h \
+    wav_read_file.h \
+    wav_write_file.h

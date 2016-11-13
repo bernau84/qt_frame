@@ -45,7 +45,7 @@ private:
     virtual int reload(int p) = 0;
 
     /*! here do the work */
-    virtual int proc(const i_rt_exchange *p) = 0;
+    virtual int proc(i_rt_exchange *p) = 0;
 
 protected:
    t_rt_setup par;
@@ -79,10 +79,10 @@ public slots:
 
 public:
     /*! */
-    void connect(const a_rt_base *follower){
+    void connect(a_rt_base *src){
 
-        if(!QObject::connect(this, SIGNAL(update(QSharedPointer<i_rt_exchange>)),
-                         follower, SLOT(on_update(QSharedPointer<i_rt_exchange>)))){
+        if(!QObject::connect(src, SIGNAL(update(QSharedPointer<i_rt_exchange>)),
+                         this, SLOT(on_update(QSharedPointer<i_rt_exchange>)))){
 
             LOG(ERROR) << "update signal not connected!";
         }
