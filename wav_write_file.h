@@ -77,7 +77,8 @@ public:
             }
          }
 
-         update_sz(header.total_bytes + size*header.bytes_per_sample);
+         header.total_bytes += size*header.bytes_per_sample;
+         //update_sz(header.total_bytes + size*header.bytes_per_sample); - nezapisuje mhned ale az se zavrenim
          return size;
      }
 
@@ -108,8 +109,11 @@ public:
 
      ~t_waw_file_writer(){
 
-         if(out.is_open())
+         if(out.is_open()){
+
+            update_sz(header.total_bytes);
             out.close();
+         }
      }
 };
 
