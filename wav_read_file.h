@@ -4,7 +4,7 @@
 #include <fstream>
 
 //---------------------------------------------------------------------------
-class t_waw_file_reader {
+class t_wav_file_reader {
 
 public:
     //program nekontroluje ale podporovany je jen format mono
@@ -45,7 +45,7 @@ public:
      /*! \brief - head copy in we have valid file; returns 0 for invalid
       * number of channels in other case
       */
-     int info(t_waw_file_reader::t_wav_header &head){
+     int info(t_wav_file_reader::t_wav_header &head){
 
         head = header;
         return header.num_channels;
@@ -73,10 +73,10 @@ public:
              switch( header.bytes_per_sample ){ //formatovani <-0.5, 0.5>
 
                case(1):
-                 for(int i=0; i<psize; i++) dest[overal++] = data_08[i]/256.0/2 - 1.0;
+                 for(int i=0; i<psize; i++) dest[overal++] = data_08[i]/(256.0/2) - 1.0;
                break;
                case(2):
-                 for(int i=0; i<psize/2; i++) dest[overal++] = (data_16[i]/65536.0) * 2;
+                 for(int i=0; i<psize/2; i++) dest[overal++] = data_16[i]/(65536.0/2);
                break;
                default:
                  size = 0;
@@ -101,7 +101,7 @@ public:
      }
 
 
-     t_waw_file_reader(const char *path, bool auto_rewind):
+     t_wav_file_reader(const char *path, bool auto_rewind):
         in(path, std::ifstream::binary),
         cyclic(auto_rewind)
      {
@@ -114,7 +114,7 @@ public:
         }
      }
 
-     ~t_waw_file_reader(){
+     ~t_wav_file_reader(){
 
          if(in.is_open())
             in.close();

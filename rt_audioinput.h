@@ -90,7 +90,7 @@ private:
 
                     //pripravime pristi casovou znacku
                     m_t += (1.0 * samples) / m_format.sampleRate();
-                    LOG(INFO) << m_t << "[s]/" << samples << "samples" ;
+                    LOG(INFO) << m_t << "[s]/" << samples << "samples";
                 }
             }
 

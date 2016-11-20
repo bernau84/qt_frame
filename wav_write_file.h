@@ -62,12 +62,12 @@ public:
 
             switch(header.bytes_per_sample){
                 case(1): {
-                    uint8_t data_08 = (data[i] + 1.0)*256/2;
+                    uint8_t data_08 = (data[i] + 1.0) * (256/2);
                     out.write((char *)&data_08, 1);
                 }
                 break;
                 case(2): {
-                    int16_t data_16 = data[i]*65536;
+                    int16_t data_16 = data[i] * (65536/2);
                     out.write((char *)&data_16, 2);
                 }
                 break;
@@ -78,7 +78,9 @@ public:
          }
 
          header.total_bytes += size*header.bytes_per_sample;
-         //update_sz(header.total_bytes + size*header.bytes_per_sample); - nezapisuje mhned ale az se zavrenim
+#ifdef QT_DEBUG
+         update_sz(header.total_bytes); //nezapisuje mhned ale az se zavrenim
+#endif //QT_DEBUG
          return size;
      }
 

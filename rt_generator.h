@@ -74,10 +74,14 @@ private:
 
                 m_data->a = x;
                 QSharedPointer<i_rt_exchange> pp(m_data);
+                LOG(INFO) << ms_proc << "[s]/" << x.size() << "samples out";
                 emit update(pp);
             }
         }
-        return x.begin() - xi;
+
+        int cached = xi - x.begin();
+        if(cached) LOG(INFO) << ms_now << "[s]/" << cached << "samples cached";
+        return cached;
     }
 
 protected:
@@ -92,7 +96,7 @@ public slots:
 
         Q_UNUSED(p);
         id_timer = startTimer(ms_period);
-        x.reserve(fs / ms_period);
+        x.resize(fs / ms_period);  //reserve nefunguje jak potrebujem
         xi = x.begin();
         elapsed.start();
         ms_proc = 0;

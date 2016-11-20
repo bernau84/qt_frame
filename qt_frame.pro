@@ -24,4 +24,5 @@ HEADERS += \
     rt_recorder.h \
     wav_read_file.h \
     wav_write_file.h \
-    rt_generator.h
+    rt_generator.h \
+    rt_wavinput.h
