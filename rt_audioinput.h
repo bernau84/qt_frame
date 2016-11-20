@@ -12,6 +12,10 @@
 
 class t_rt_audioinput;
 
+/*! \todo prejmenovat asi na mic input
+ * + do konstruktoru dat nazev pro m_device pokud se nema brat defaultni
+ * */
+
 class t_rt_audioinput_ex : public i_rt_exchange {
 
 private:
@@ -75,7 +79,7 @@ private:
 
                     m_data->f = m_format.sampleRate() / 2;  //rozliseni jednoho vzorku je nyguistovka
                     m_data->t = m_t;
-#if 1
+#if 0
                     double rms = 0;
                     for(int i=0; i<samples; i++) rms += pow(m_data->a[i], 2);
                     rms = sqrt(rms) / len;
