@@ -25,7 +25,7 @@ public:
           unsigned long 	bytes_to_follow;
     };
 
-private:
+protected:
      std::ifstream in;
      bool cyclic;
      t_wav_header header __attribute__((packed));

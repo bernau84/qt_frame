@@ -39,17 +39,18 @@ class t_rt_generator : public a_rt_base {
 
     Q_OBJECT
 
+protected:
+    double  fs;
+    double  ms_period;
+    double  ms_proc;
+
 private:
     std::function<double(double)> f_sample;
     QElapsedTimer elapsed;
     QVector<double> x;
     QVector<double>::Iterator xi;
     t_rt_generator_ex *m_data;
-    double  fs;
-    double  ms_period;
     int     id_timer;
-    double  ms_proc;
-
 
     /*! init privates from configuration */
     virtual int reload(int p){
@@ -73,18 +74,19 @@ private:
             if((m_data = new t_rt_generator_ex())){  //alokujem novy buffer - stary se uvolni diky SharedPnt
 
                 m_data->a = x;
+                m_data->f = fs / 2;  //frekvence vzorku je nyquistovka
+                m_data->t = ms_proc - ms_per*x.size();  //znacka 1-ho vzorku
                 QSharedPointer<i_rt_exchange> pp(m_data);
-                LOG(INFO) << ms_proc << "[s]/" << x.size() << "samples out";
+                LOG(INFO) << m_data->t << "[s]/" << x.size() << "samples out";
                 emit update(pp);
             }
         }
 
         int cached = xi - x.begin();
-        if(cached) LOG(INFO) << ms_now << "[s]/" << cached << "samples cached";
+        if(cached) LOG(INFO) << (ms_proc - ms_per*cached) << "[s]/" << cached << "samples cached";
         return cached;
     }
 
-protected:
     void timerEvent(QTimerEvent *event){
         Q_UNUSED(event);
         proc(NULL);
@@ -92,7 +94,7 @@ protected:
 
 public slots:
 
-    void on_start(int p){
+    virtual void on_start(int p){
 
         Q_UNUSED(p);
         id_timer = startTimer(ms_period);
@@ -102,7 +104,7 @@ public slots:
         ms_proc = 0;
     }
 
-    void on_stop(int p){
+    virtual void on_stop(int p){
 
         Q_UNUSED(p);
         killTimer(id_timer);
