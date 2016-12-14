@@ -25,4 +25,6 @@ HEADERS += \
     wav_read_file.h \
     wav_write_file.h \
     rt_generator.h \
-    rt_wavinput.h
+    rt_wavinput.h \
+    filter_a.h \
+    filter_fir_direct.h
