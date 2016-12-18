@@ -30,7 +30,7 @@ template <class T> class a_filter {
         std::vector<T> num;
         std::vector<T> den;
 
-        unsigned m_proc_2_output;
+        unsigned m_countdown;
         unsigned decimationf;     //mozny je jen faktor > 0, 0 funguje jako pauza (vystup se neupdatuje)
         e_type m_type;  //typ pro zpetnou identifikaci
 
@@ -43,10 +43,10 @@ template <class T> class a_filter {
             n_2_proc == 0 defines valid output in decimation mode
             \todo - may be used to signal valid output after group delay, after filter run-up time/sample
         */
-        virtual T process(const T &new_smpl, unsigned *proc_2_output = &m_proc_2_output) = 0;
+        virtual T process(const T &feed, unsigned *countdown = &m_countdown) = 0;
 
         /*! \brief - backward identification */
-        e_filter_struct type(){ return m_type; }
+        e_type type(){ return m_type; }
 
         /*! \brief - return last filtering result (cache for deciamtion purpose) */
         T last(){ return prev; }
@@ -58,6 +58,14 @@ template <class T> class a_filter {
             data.assign(data.size(), def);
             prev = T(0);
             proc = 0;
+        }
+
+        /*! \brief -
+         */
+        void tune(std::vector<T> &_num, std::vector<T> &_den){
+
+            num = _num;
+            den = _den;
         }
 
         /*! \brief - set initial value (to minimize gd for example)
@@ -75,33 +83,33 @@ template <class T> class a_filter {
         }        
 
         /*! \brief - copy of existing, except delay line */
-        t_pFilter(const t_pFilter<T> &src):
-            shift_dat(src.data),
-            coeff_num(src.num),
-            coeff_den(src.den),
+        a_filter(const a_filter<T> &src):
+            data(src.data),
+            num(src.num),
+            den(src.den),
             decimationf(src.decimationf),
-            struction(src.m_type)
+            m_type(src.m_type)
         {
             proc  = 0;
         }
 
         /*! \brief - new flter definition (including decimation factor) */
-        t_pFilter(const T *_num, const T *_den, int32_t N, int32_t _decimationf = 1):
-            shift_dat(0),
-            coeff_num(0),
-            coeff_den(0),
+        a_filter(const T *_num, const T *_den, int32_t N, int32_t _decimationf = 1):
+            data(0),
+            num(0),
+            den(0),
             decimationf(_decimationf)
         {
-            if(_N > 1) data = std::vector<T>(N - 1);            
+            data = std::vector<T>(N);            
             if(_num) num = std::vector<T>(_num, &_num[N]);
             if(_den) den = std::vector<T>(_den, &_den[N]);
            
             prev = T(0);
-            proc  = 0;
+            proc = 0;
         }
 
         /*! \brief - free previsous allocation */
-        virtual ~t_pFilter(){
+        virtual ~a_filter(){
 
         }
 };

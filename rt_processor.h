@@ -1,15 +1,17 @@
-#ifndef RT_GENERATOR_H
-#define RT_GENERATOR_H
+#ifndef RT_PROCESSOR_H
+#define RT_PROCESSOR_H
 
+
+#include "filter_a.h"
 #include "rt_base_a.h"
 #include <QElapsedTimer>
 
-class t_rt_generator;
+class t_rt_filter;
 
-class t_rt_generator_ex : public i_rt_exchange {
+class t_rt_filter_ex : public i_rt_exchange {
 
 private:
-    friend class t_rt_generator;
+    friend class t_rt_filter;
 
     QVector<double> a;
     double t;
@@ -28,14 +30,14 @@ private:
     virtual const double *f_f(){ return NULL; }
     virtual const double *f_t(){ return NULL; }
 
-    t_rt_generator_ex(){}
-    virtual ~t_rt_generator_ex(){
+    t_rt_filter_ex(){}
+    virtual ~t_rt_filter_ex(){
         // LOG(TRACE) << "released";
     }
 };
 
 
-class t_rt_generator : public a_rt_base {
+class t_rt_filter : public a_rt_base {
 
     Q_OBJECT
 
@@ -45,12 +47,24 @@ protected:
     double  ms_proc;
 
 private:
-    std::function<double(double)> f_sample;
+    a_filter<double> &m_filter;
     QElapsedTimer elapsed;
     QVector<double> x;
     QVector<double>::Iterator xi;
-    t_rt_generator_ex *m_data;
-    int     id_timer;
+    t_rt_filter_ex *m_data;
+
+    void _filter(double *a, int n){
+
+        for(int i=0; i<n; i++)
+            if(0 == m_filter.process(*a++)){
+
+                //write to output
+                if(m_data == NULL){
+
+                    m_data = new t_rt_filter_ex()
+                }
+            }
+    }
 
     /*! init privates from configuration */
     virtual int reload(int p){
@@ -60,33 +74,27 @@ private:
 
     /*! here do the work */
     virtual int proc(i_rt_exchange *p){
-        Q_UNUSED(p);
-        double ms_now = elapsed.elapsed();
-        double ms_per = 1000 / fs;
-        while((ms_proc + ms_per) < ms_now){ //inkrementujeme dokud sme ve vzorkovacim okne
 
-            *xi++ = f_sample(ms_proc/1000);  //lambda generator
-            ms_proc += ms_per;
-            if(xi != x.end())
-                continue;
+        if(!p)
+            return 0;
 
-            xi = x.begin();   //mame plny buffer
-            if((m_data = new t_rt_generator_ex())){  //alokujem novy buffer - stary se uvolni diky SharedPnt
+        int i_fs = p->f_f(0) * 2; //z nyguista na fs + zaokrouhleni na cele Hz
+        if(fs != i_fs)
+            on_stop(0);  //zmena vzorkovacky - musime zalozit novy soubor
 
-                m_data->a = x;
-                m_data->f = fs / 2;  //frekvence vzorku je nyquistovka
-                m_data->t = ms_proc - ms_per*x.size();  //znacka 1-ho vzorku
-                QSharedPointer<i_rt_exchange> pp(m_data);
-                LOG(INFO) << m_data->t/1000.0 << "[s]/" 
-                          << x.size() << "samples out";
-                emit update(pp);
-            }
+        if(p->n() == 0)
+            return 0;
+
+        double *a = p->f_a();
+        if(NULL == a){
+
+            QVector<double> d(p->n());  //floatovy buffer si musime vyrobit
+            for(int i=0; i < p->n(); i++) d[i] = p->f_a(i);
         }
 
-        int cached = xi - x.begin();
-        if(cached) LOG(INFO) << (ms_proc - ms_per*cached)/1000.0 
-                             << "[s]/" << cached << "samples cached";
-        return cached;
+
+
+        return file->write(d.constData(), p->n());
     }
 
     void timerEvent(QTimerEvent *event){
@@ -109,7 +117,7 @@ public slots:
     virtual void on_stop(int p){
 
         Q_UNUSED(p);
-        killTimer(id_timer);
+        m_filter.reset();
     }
 
 public:
@@ -126,5 +134,4 @@ public:
     virtual ~t_rt_generator(){}
 };
 
-
-#endif // RT_GENERATOR_H
+#endif // RT_PROCESSOR_H
