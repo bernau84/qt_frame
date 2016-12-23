@@ -28,4 +28,5 @@ HEADERS += \
     rt_wavinput.h \
     filter_a.h \
     filter_fir_direct.h \
-    rt_processor.h
+    rt_processor.h \
+    f_windowing.h

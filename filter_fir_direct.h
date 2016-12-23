@@ -1,4 +1,5 @@
 #include "filter_a.h"
+#include "f_windowing.h"
 
 template <class T> class t_filter_fir_direct : public a_filter<T> {
 
@@ -69,7 +70,7 @@ template <class T> class t_filter_fir_direct : public a_filter<T> {
 };
 
 
-template <class T> class t_filter_fir_windowed : public t_filter_fir_direct {
+template <class T> class t_filter_wfir : public t_filter_fir_direct {
 
     using a_filter<T>::data;
     using a_filter<T>::num;
@@ -78,58 +79,21 @@ template <class T> class t_filter_fir_windowed : public t_filter_fir_direct {
     using a_filter<T>::decimationf;
     using a_filter<T>::m_type;
 
-public:
-    enum e_win {
-        HANN = 0x10,
-        HAMM = 0x11,
-        FLAT = 0x12,
-        BLCK = 0x14,
-        RECT = 0x18,
-        BRTL = 0x20,
-        GAUS = 0x21
-    };
-
 private:
     e_win  m_win;
+    int m_N;
 
-public: /* staticke metody pro pouziti mimo instanci
-         */
-
-        /* vraci vzorek okencovaci funkce
-         */
-        static T fwin(e_win w, int i, int N, T par = T(0)){
-
-            double temp;
-            switch (w){
-
-               case HANN:        //w = 1 - cos(2*pi*(0:m-1)'/(n-1)));
-                         return 2*(0.5 - 0.5*cos( 2*M_PI*i/N ));
-               case HAMM:        //w = (54 - 46*cos(2*pi*(0:m-1)'/(n-1)))/100;
-                         return 2*(0.54 - 0.46*cos( 2*M_PI*i/N ));
-               case BLCK:        //w = (42 - 50*cos(2*pi*(0:m-1)/(n-1)) + 8*cos(4*pi*(0:m-1)/(n-1)))'/100;
-                         return 2*(0.42 - 0.50*cos( 2*M_PI*i/N ) - 0.08*cos( 4*M_PI*i/N ));
-               case RECT:
-                         return 1;
-               case FLAT:        //w = 1 - 1.98*cos(2*Pi*(0:m-1)/(n-1)) + 1.29*cos(4*Pi*(0:m-1)/(n-1)) - 0.388*cos(6*Pi*(0:m-1)/(n-1)) + 0.0322*cos(8*Pi*t/T);
-                         return (1 - 1.98*cos( 2*M_PI*i/N ) + 1.29*cos( 4*M_PI*i/N ) - 0.388*cos( 6*M_PI*i/N ) + 0.0322*cos( 8*M_PI*i/N ));
-               case BRTL:
-                         return (2 - fabs(4*(i-N/2)/N));
-               case GAUS:         //w = exp(-((-Nw/2:(Nw/2-1))/(Sigma*Nw)).^2);
-                         temp = (i-N/2.0)/(par*N);    //zpocitame si predem exponent
-                         return exp(-(temp*temp));
-            }
-
-            return 0;
-        }
-
-        /* vygeneruje inpulsni odezvu fir filtru delky N a sirky pasma B
+public:
+        /* vygeneruje inpulsni odezvu idelaniho low pass fir filtru delky N a mezni frekvence fm
          * pomoci okenkovani fce sinc jakozto idelani LP odezvy
+         * nenormalizuje
+         *
+         * staticka proto aby se dala pouzit i jinde (pro vypocet sync())
          */
-        static std::vector<T> fdesign(T B, int N, e_win w = RECT){
+        static std::vector<T> fdesign(double fm, int N, e_win w = RECT){
 
-            T fm = B/2;  //vychozim stavem je LP
             if(0 == (1&N)) N += 1; //zjednoduseni - N musi byt liche
-            out = std::vector<T>(N);
+            std::vector<T> out(N);
 
             out[N/2] = B; //napocitame idealni filtr
             for(int i=0; i<N/2; i++){
@@ -139,29 +103,68 @@ public: /* staticke metody pro pouziti mimo instanci
             }
 
             //aplikace okynka
-            for(int i=0; i<N; i++)
-                out[i] *= fwin(w, i, N);
+            for(int i=0; i<N; i++) out[i] *= f_win(i, N, w);  //from f_windovin
 
             return out;
         }
 
-        t_filter_fir_windowed(const a_filter<T> &src)
+        /* zmena za behu 
+         * fs [Hz] sampling freq 
+         * G [dB] gain (== normalization)
+         * B [Hz] (0, fs) sirka pasma
+         * fc [Hz] (0, f_nyq) centralni frekvence
+         **/
+        void redesign(t_tf_props &par){
+
+            double fm = 1.0; //default - udelame half band
+            double A = 1.0;
+
+            int B = par[s_wf_B];
+            int G = par[s_wf_G];        
+            int fs = par[s_wf_fs];
+            int fc = par[s_wf_F_central];
+
+            if(B && fs) fm = (1.0 * B/2) / fs;  //mezni fr je polovinou B u ideal LP
+            if(G) A = pow(10, G/20.0);
+
+            num = fdesign(fm, N, w);
+            if(fc > 1e-10) fshift(fc, num);
+            for(int i=0; i<N; i++) out[i] *= A;  //gain          
+        }
+
+        void redesign(const char *config = "#B=0.5#fs=1"){
+
+            t_tf_props par = f_str2tf(config);
+            redesign(par);
+        }
+
+        t_filter_wfir(const a_filter<T> &src)
                        :a_filter<T>(src)
         {
             m_type = a_filter<T>::FIR_DIRECT1;
         }
 
-        /* B je celkova sirka pasma <0, 2> kde 1 je idealni half pass
-         * shift je posunuti v digitalni frekbence f/fs
-         * */
-        t_filter_fir_windowed(int32_t N, e_win w, double B = 1, double shift = 0, int32_t _decimationf = 1)
+        /* v par musi byt je celkova sirka pasma B <0, 1> kde 0.5 je idealni half pass
+         * pozor B se zadava jako idealni LP takze musi byt 2*fm (mezni frekvence)
+         * fc je centralni frekvence pro realizaci bp, resp hp
+         **/
+        t_filter_wfir(int32_t N, e_win w, t_tf_props &par, int32_t _decimationf = 1)
                        :t_filter_fir_direct<T>(NULL, N, _decimationf),
-                        m_win(w)
+                        m_win(w),
+                        m_N(N)
         {
-            num = fdesign(B, N, w);
-            fshift(shift, num);
+            redesign(par);
             m_type = a_filter<T>::FIR_DIRECT1;
         }
 
-        virtual ~t_filter_fir_direct(){;}
+        t_filter_wfir(int32_t N, e_win w, const char *config = "#B=0.5#fs=1", int32_t _decimationf = 1)
+                       :t_filter_fir_direct<T>(NULL, N, _decimationf),
+                        m_win(w),
+                        m_N(N)
+        {
+            redesign(config);
+            m_type = a_filter<T>::FIR_DIRECT1;
+        }
+
+        virtual ~t_filter_wfir(){;}
 };
