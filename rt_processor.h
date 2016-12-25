@@ -121,7 +121,7 @@ public slots:
     }
 
 public:
-    t_rt_generator(const QString &js_config, std::function<double(double t)> _f_sample, QObject *parent = NULL):
+    t_rt_filter(const QString &js_config, std::function<double(double t)> _f_sample, QObject *parent = NULL):
       a_rt_base(js_config, parent),
       f_sample(_f_sample)
     {
@@ -131,7 +131,7 @@ public:
         ms_proc = 0;
     }
 
-    virtual ~t_rt_generator(){}
+    virtual ~t_rt_filter(){}
 };
 
 #endif // RT_PROCESSOR_H

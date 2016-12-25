@@ -1,4 +1,6 @@
 
+#include "easylogging++.h"
+
 /*! time-freq properties 
 	well known parameters 
 */
@@ -16,7 +18,7 @@ const char *s_wf_T_aver = "#T_av"; //[us], averaging time = casova konstanta fil
 
 typedef std::map<const char *, int> t_tf_props;
 
-/*! \enum konverze ze stringu na map
+/*! konverze parametru ze stringu na map
  */
 t_tf_props f_str2tf(const char *s){
 
@@ -34,43 +36,50 @@ t_tf_props f_str2tf(const char *s){
 		s_wf_F_central,
 		s_wf_T_aver,
 		NULL
-	}
+    };
 
 	int t, n;
 
 	while(s){
 
-		const char *o = list;
-		for(; o; o++){
+        const char **o = list;
+        for(; *o; o++){
 
-			n = strlen(o);
-			if(0 == strcmp(s, o, n))
+            n = strlen(*o);
+            if(0 == memcmp(s, *o, n))
 				if(1 == sscanf(s+n+1, "%d", &t)){ //posun za '='
 
-					m_p[o] = t;	
+                    ret[*o] = t;
 					break;
 				}
 		}
 
-		if(o) s += n+2; //nasli sme klic, posun za '='
-			else s++; //zadna schoda - jen o znak
+        s = strchr(s, '#');
 	}
 		
 
 	return ret;
 }
 
+
+/*! logovani
+ */
+template <typename T> void f_arr2log(std::vector<T> &arr){
+    LOG(DEBUG) << arr;
+}
+
 /*! \enum supporting windows waveforms
  */
 enum e_win {
 
-    HANN = 0x10,
-    HAMM = 0x11,
-    FLAT = 0x12,
-    BLCK = 0x14,
-    RECT = 0x18,
-    BRTL = 0x20,
-    GAUS = 0x21
+    WHANN = 0x10,
+    WHAMM = 0x11,
+    WFLAT = 0x12,
+    WBLCK = 0x14,
+    WRECT = 0x18,
+    WBRTL = 0x20,
+    WGAUS = 0x21,
+    WUSER = 0x80
 };
 
 static t_tf_props fwin_pro_0;  //empty settings
@@ -78,37 +87,39 @@ static t_tf_props fwin_pro_0;  //empty settings
 /*! \brief vraci vzorek okynka normalizovaneho na max == 1 pro analyzu v case
  	tj. okno nema plochu 1 (kterou potrebujeme pro ampl/pwr frekv char)
 */
-template <typename T> T f_win(int i, int N, e_win w = HAMM, const t_tf_props &p = fwin_pro_0){
+template <typename T> T f_win(int i, int N, e_win w = WHAMM, const t_tf_props &p = fwin_pro_0){
 
     switch (w){
 
-       case HANN:        //w = 1 - cos(2*pi*(0:m-1)'/(n-1)));
+       case WHANN:        //w = 1 - cos(2*pi*(0:m-1)'/(n-1)));
             return 2*(0.5 - 0.5*cos( 2*M_PI*i/N ));
-       case HAMM:        //w = (54 - 46*cos(2*pi*(0:m-1)'/(n-1)))/100;
+       case WHAMM:        //w = (54 - 46*cos(2*pi*(0:m-1)'/(n-1)))/100;
             return 2*(0.54 - 0.46*cos( 2*M_PI*i/N ));
-       case BLCK:        //w = (42 - 50*cos(2*pi*(0:m-1)/(n-1)) + 8*cos(4*pi*(0:m-1)/(n-1)))'/100;
+       case WBLCK:        //w = (42 - 50*cos(2*pi*(0:m-1)/(n-1)) + 8*cos(4*pi*(0:m-1)/(n-1)))'/100;
        		/*! \todo parametrizace */
             return 2*(0.42 - 0.50*cos( 2*M_PI*i/N ) - 0.08*cos( 4*M_PI*i/N ));
-       case RECT:
+       case WRECT:
             return 1;
-       case FLAT:        //w = 1 - 1.98*cos(2*Pi*(0:m-1)/(n-1)) + 1.29*cos(4*Pi*(0:m-1)/(n-1)) - 0.388*cos(6*Pi*(0:m-1)/(n-1)) + 0.0322*cos(8*Pi*t/T);
+       case WFLAT:        //w = 1 - 1.98*cos(2*Pi*(0:m-1)/(n-1)) + 1.29*cos(4*Pi*(0:m-1)/(n-1)) - 0.388*cos(6*Pi*(0:m-1)/(n-1)) + 0.0322*cos(8*Pi*t/T);
             return (1 - 1.98*cos( 2*M_PI*i/N ) + 1.29*cos( 4*M_PI*i/N ) - 0.388*cos( 6*M_PI*i/N ) + 0.0322*cos( 8*M_PI*i/N ));
-       case BRTL:
+       case WBRTL:
             return (2 - fabs(4*(i-N/2)/N));
-       case GAUS:  {
+       case WGAUS:  {
 
 			 //w = exp(-((-Nw/2:(Nw/2-1))/(Sigma*Nw)).^2);
-			int B = p[s_wf_B];
-			int fs = p[s_wf_fs];
-			int TA = p[s_wf_T_aver];
+            int B = p.find(s_wf_B)->second;
+            int fs = p.find(s_wf_fs)->second;
+            int TA = p.find(s_wf_T_aver)->second;
 
 			T sigma = 0.5; //default
 			if(fs && B) sigma = (1.0 * B) / fs; //frekvencni design
 			if(fs && TA) sigma = (TA * fs) / 1000000; //casovy design
 
-			temp = (i-N/2.0) / (sigma*N);    //zpocitame si predem exponent
+            T temp = (i-N/2.0) / (sigma*N);    //zpocitame si predem exponent
 			return exp(-(temp*temp));
         }
+        default:
+        break;
     }
 
     return 0;
@@ -127,15 +138,20 @@ public:
 	T operator [](int i)
 	{
 		T &ret = m_c[i % m_c.size()]; //berem z cache
-		if(i > m_i) ret = fwin(i, m_N, m_w, m_p); //vypocitavame + pres ref se zapise do cache
+        if(i > m_i) ret = f_win<T>(i, m_N, m_w, m_p); //vypocitavame + pres ref se zapise do cache
 		return ret;
 	}
 
 	int &operator [](const char *param)
 	{
-		if(0 == strcmp("N")) return N;  //i pro zmenu delky ale bez resetu
+        if(0 == strcmp("#N", param)) return m_N;  //i pro zmenu delky ale bez resetu
 		return m_p[param]; //nebo jiny parametr
 	}
+
+    void log(){
+
+        f_arr2log(m_c);
+    }
 
 	void reset(int N){  //nastaveni nove delky 
 
@@ -144,7 +160,7 @@ public:
 		m_N = N;
 	}
 
-	t_f_win(e_win w, N = 256, const t_tf_props &p = fwin_pro_0) :
+    t_f_win(e_win w, int N = 256, const t_tf_props &p = fwin_pro_0) :
 		m_w(w),
 		m_N(N),
 		m_p(p),
@@ -153,7 +169,7 @@ public:
 		m_i = 0;
 	}
 
-	t_f_win(e_win w, N = 256, const char *config = "#B=0.5#fs=1") :
+    t_f_win(e_win w, int N = 256, const char *config = "#B=0.5#fs=1") :
 		m_c(N)
 	{
 		m_w = w;
@@ -161,4 +177,4 @@ public:
 		m_i = 0;		
 		m_p = f_str2tf(config);
 	}
-}
+};
