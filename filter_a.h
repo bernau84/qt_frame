@@ -43,7 +43,7 @@ template <class T> class a_filter {
             n_2_proc == 0 defines valid output in decimation mode
             \todo - may be used to signal valid output after group delay, after filter run-up time/sample
         */
-        virtual T process(const T &feed, unsigned *countdown = &m_countdown) = 0;
+        virtual T process(const T &feed, unsigned *countdown = NULL) = 0;
 
         /*! \brief - backward identification */
         e_type type(){ return m_type; }

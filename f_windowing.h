@@ -1,6 +1,9 @@
 
 #include "easylogging++.h"
 
+#ifndef F_WINDOWINGH
+#define F_WINDOWINGH
+
 /*! time-freq properties 
 	well known parameters 
 */
@@ -14,7 +17,7 @@ const char *s_wf_GD = "#GD"; //group delay - todo: tady je problem se definici p
 const char *s_wf_F_shift = "#F_sh"; //posun idealni LP (zakladni) charaketeristiky
 const char *s_wf_F_type = "#F_ty"; //zakladni charakteristika filtru - lp, hp, bp, notch, all, diff...
 const char *s_wf_F_central = "#F_fc"; //centralni frekvence - nahrazuje hodne typ vyse (0 - lp, 1 - hp, <0,1> - bp)
-const char *s_wf_T_aver = "#T_av"; //[us], averaging time = casova konstanta filtru
+const char *s_wf_T_aver = "#TA"; //[us], averaging time = casova konstanta filtru
 
 typedef std::map<const char *, int> t_tf_props;
 
@@ -54,7 +57,7 @@ t_tf_props f_str2tf(const char *s){
 				}
 		}
 
-        s = strchr(s, '#');
+        s = strchr(s+1, '#');
 	}
 		
 
@@ -89,33 +92,37 @@ static t_tf_props fwin_pro_0;  //empty settings
 */
 template <typename T> T f_win(int i, int N, e_win w = WHAMM, const t_tf_props &p = fwin_pro_0){
 
+    T t = (N & 1) ? i : (i+0.5);  //abysme meli okynko symetricky
     switch (w){
 
        case WHANN:        //w = 1 - cos(2*pi*(0:m-1)'/(n-1)));
-            return 2*(0.5 - 0.5*cos( 2*M_PI*i/N ));
+            return 2*(0.5 - 0.5*cos( 2*M_PI*t/N ));
        case WHAMM:        //w = (54 - 46*cos(2*pi*(0:m-1)'/(n-1)))/100;
-            return 2*(0.54 - 0.46*cos( 2*M_PI*i/N ));
+            return 2*(0.54 - 0.46*cos( 2*M_PI*t/N ));
        case WBLCK:        //w = (42 - 50*cos(2*pi*(0:m-1)/(n-1)) + 8*cos(4*pi*(0:m-1)/(n-1)))'/100;
        		/*! \todo parametrizace */
-            return 2*(0.42 - 0.50*cos( 2*M_PI*i/N ) - 0.08*cos( 4*M_PI*i/N ));
+            return 2*(0.42 - 0.50*cos( 2*M_PI*t/N ) - 0.08*cos( 4*M_PI*t/N ));
        case WRECT:
             return 1;
        case WFLAT:        //w = 1 - 1.98*cos(2*Pi*(0:m-1)/(n-1)) + 1.29*cos(4*Pi*(0:m-1)/(n-1)) - 0.388*cos(6*Pi*(0:m-1)/(n-1)) + 0.0322*cos(8*Pi*t/T);
-            return (1 - 1.98*cos( 2*M_PI*i/N ) + 1.29*cos( 4*M_PI*i/N ) - 0.388*cos( 6*M_PI*i/N ) + 0.0322*cos( 8*M_PI*i/N ));
+            return (1 - 1.98*cos( 2*M_PI*t/N ) + 1.29*cos( 4*M_PI*t/N ) - 0.388*cos( 6*M_PI*t/N ) + 0.0322*cos( 8*M_PI*t/N ));
        case WBRTL:
-            return (2 - fabs(4*(i-N/2)/N));
+            return (2 - fabs(4*(t-N/2)/N));
        case WGAUS:  {
 
 			 //w = exp(-((-Nw/2:(Nw/2-1))/(Sigma*Nw)).^2);
-            int B = p.find(s_wf_B)->second;
-            int fs = p.find(s_wf_fs)->second;
-            int TA = p.find(s_wf_T_aver)->second;
+            t_tf_props::const_iterator it;
+
+            int B = 0, fs = 0, TA = 0;
+            if(p.end() != (it = p.find(s_wf_B))) B = it->second;
+            if(p.end() != (it = p.find(s_wf_fs))) fs = it->second;
+            if(p.end() != (it = p.find(s_wf_T_aver))) TA = it->second;
 
 			T sigma = 0.5; //default
 			if(fs && B) sigma = (1.0 * B) / fs; //frekvencni design
-			if(fs && TA) sigma = (TA * fs) / 1000000; //casovy design
+            else if(fs && TA) sigma = (TA * fs) / 1000000.0; //casovy design
 
-            T temp = (i-N/2.0) / (sigma*N);    //zpocitame si predem exponent
+            T temp = (t-N/2.0) / (sigma*N);    //zpocitame si predem exponent
 			return exp(-(temp*temp));
         }
         default:
@@ -129,17 +136,23 @@ template <typename T> class t_f_win {
 
 private:
 	e_win m_w;
-	int m_N;
 	t_tf_props m_p;
 	std::vector<T> m_c;
-	int m_i;
+
+    int m_i;
+    int m_N;
 
 public:
 	T operator [](int i)
 	{
-		T &ret = m_c[i % m_c.size()]; //berem z cache
-        if(i > m_i) ret = f_win<T>(i, m_N, m_w, m_p); //vypocitavame + pres ref se zapise do cache
-		return ret;
+        i %= m_N;
+
+        while(m_i <= i){  //dopocotam vse mezi poslednim a pozadovanym
+            m_c[m_i] = f_win<T>(m_i, m_N, m_w, m_p); //vypocitavame + pres ref se zapise do cache
+            m_i += 1;
+        }
+
+        return m_c[i];
 	}
 
 	int &operator [](const char *param)
@@ -169,7 +182,7 @@ public:
 		m_i = 0;
 	}
 
-    t_f_win(e_win w, int N = 256, const char *config = "#B=0.5#fs=1") :
+    t_f_win(e_win w, int N = 256, const char *config = "#B=500#fs=1000") :
 		m_c(N)
 	{
 		m_w = w;
@@ -178,3 +191,5 @@ public:
 		m_p = f_str2tf(config);
 	}
 };
+
+#endif // F_WINDOWINGH

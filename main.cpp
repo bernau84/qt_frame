@@ -5,6 +5,7 @@
 #include "rt_wavinput.h"
 #include "f_windowing.h"
 #include "easylogging++.h"
+#include "filter_fir_direct.h"
 
 INITIALIZE_EASYLOGGINGPP
 
@@ -12,20 +13,20 @@ int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
-    t_f_win<double> wi_gauss(WGAUS, 8, "#B=0.5#fs=1#TA=0.1");
+    t_f_win<double> wi_gauss(WGAUS, 13, "#B=500#fs=1000#TA=100");
     LOG(INFO) << wi_gauss[0];
-    LOG(INFO) << wi_gauss[1];
+    LOG(INFO) << wi_gauss[8];
+    LOG(INFO) << wi_gauss[12];
     LOG(INFO) << wi_gauss[2];
-    LOG(INFO) << wi_gauss[3];
-    LOG(INFO) << wi_gauss[4];
-    LOG(INFO) << wi_gauss[5];
-    LOG(INFO) << wi_gauss[6];
-    LOG(INFO) << wi_gauss[7];
     wi_gauss.log();
 
-    t_f_win<double> wi_hann(WHANN, 8, "#B=0.5#fs=1#TA=0.1");
-    LOG(INFO) << wi_hann[0] << wi_hann[4];
+    t_f_win<double> wi_hann(WHANN, 8, "#B=500#fs=1000#TA=100");
+    LOG(INFO) << "[0]" << wi_hann[0] << " [4]" << wi_hann[4];
     wi_hann.log();
+
+    t_filter_wfir<double> wfir(8, WRECT, "#B=500#fs=1000");
+    wfir.process(1);
+
 
     t_rt_audioinput aud_src("");
     t_rt_recorder aud_rec("");
@@ -37,6 +38,7 @@ int main(int argc, char *argv[])
 
     wav_src.on_start(0);
     aud_rec.on_start(0);
+
     /*
     aud_src.on_start(0);
     sig_gen.on_start(0);

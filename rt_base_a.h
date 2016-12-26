@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QFile>
+#include <QDir>
 #include <QJsonDocument>
 #include <QSharedPointer>
 
@@ -20,25 +21,39 @@ class a_rt_base : public QObject
     Q_OBJECT
 
 private:
-    /*! constructor helper */
-    QJsonObject _path2json(const QString &path){
 
-        // default config
-        QFile f_def(path);  //from resources
-        if(f_def.open(QIODevice::ReadOnly | QIODevice::Text)){
+    QJsonObject _str2json(const QByteArray &array){
 
-            QByteArray f_data = f_def.read(64000);
+        QJsonDocument js_doc = QJsonDocument::fromJson(array);
+        if(!js_doc.isEmpty()){
 
-            QJsonDocument js_doc = QJsonDocument::fromJson(f_data);
-            if(!js_doc.isEmpty()){
-
-                //LOG(INFO) << js_doc.toJson();
-                return js_doc.object();
-            }
+            //LOG(INFO) << js_doc.toJson();
+            return js_doc.object();
         }
 
         return QJsonObject();
     }
+
+    /*! constructor helper */
+    QJsonObject _path2json(const QString &conf){
+
+        //filepath of json config dist.
+        if((false == QDir::isAbsolutePath(conf)) &&
+           (false == QDir::isRelativePath(conf)))
+            _str2json(conf.toLatin1());  //nejde o filepath -> zkusime primo json
+
+        // default config
+        QFile f_def(conf);  //from resources
+        if(f_def.open(QIODevice::ReadOnly | QIODevice::Text)){
+
+            QByteArray cons = f_def.read(64000);
+            return _str2json(cons);
+        }
+
+        return QJsonObject();
+    }
+
+
 
 //virtuals:
     /*! init privates from configuration */
@@ -116,9 +131,9 @@ public:
         return;
     }
 
-    a_rt_base(const QString &js_config, QObject *parent = NULL):
+    a_rt_base(const QString &conf, QObject *parent = NULL):
         QObject(parent),
-        par(_path2json(js_config))
+        par(_path2json(conf))
     {
         LOG(INFO) << rt_base_counter++;
     }
