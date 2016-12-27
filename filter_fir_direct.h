@@ -101,11 +101,11 @@ public:
      */
     static std::vector<T> fdesign(double fm, int N, e_win w = WRECT){
 
-        if(0 == (1&N)) N += 1; //zjednoduseni - N musi byt liche
         std::vector<T> out(N);
 
-        out[N/2] = fm; //napocitame idealni filtr
-        for(int i=0; i<N/2; i++){
+        //eval sinc(x)
+        out[N/2] = fm; //z lHopitalova hodnota v nule (pouzije se pro N licha)
+        for(int i=0; i<N/2; i++){ //napocitame ostatni hodnoty idealni lp
 
             T a = 2*M_PI*fm*(N/2 - i);
             out[i] = out[N - i - 1] = sin(a) / (M_PI * a);

@@ -27,6 +27,7 @@ int main(int argc, char *argv[])
     t_filter_wfir<double> wfir(8, WRECT, "#B=500#fs=1000");
     wfir.process(1);
 
+    return 0;
 
     t_rt_audioinput aud_src("");
     t_rt_recorder aud_rec("");

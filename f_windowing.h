@@ -145,10 +145,12 @@ private:
 public:
 	T operator [](int i)
 	{
-        i %= m_N;
+        i %= m_N;  //sanity prevency
+        i = abs(m_N/2 - i);  //symetry
 
         while(m_i <= i){  //dopocotam vse mezi poslednim a pozadovanym
             m_c[m_i] = f_win<T>(m_i, m_N, m_w, m_p); //vypocitavame + pres ref se zapise do cache
+            m_c[m_N - m_i - 1] = m_c[m_i]; //vyuzit symetrie okenek a nacachovat rovnou i zrcadlovou hodnotu
             m_i += 1;
         }
 
