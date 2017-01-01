@@ -30,11 +30,10 @@ template <class T> class a_filter {
         std::vector<T> num;
         std::vector<T> den;
 
-        unsigned m_countdown;
         unsigned decimationf;     //mozny je jen faktor > 0, 0 funguje jako pauza (vystup se neupdatuje)
-        e_type m_type;  //typ pro zpetnou identifikaci
+        e_type typef;  //typ pro zpetnou identifikaci
 
-        uint64_t proc;     //index zracovaneho vzorku (inkrement)
+        uint64_t counter;     //index zracovaneho vzorku (inkrement)
         T prev;    //zaloha posledniho vysledeku
 
     public:
@@ -43,10 +42,10 @@ template <class T> class a_filter {
             n_2_proc == 0 defines valid output in decimation mode
             \todo - may be used to signal valid output after group delay, after filter run-up time/sample
         */
-        virtual T process(const T &feed, unsigned *countdown = NULL) = 0;
+        virtual T *proc(const T &feed, unsigned *count = NULL) = 0;
 
         /*! \brief - backward identification */
-        e_type type(){ return m_type; }
+        e_type type(){ return typef; }
 
         /*! \brief - return last filtering result (cache for deciamtion purpose) */
         T last(){ return prev; }
@@ -57,7 +56,7 @@ template <class T> class a_filter {
 
             data.assign(data.size(), def);
             prev = T(0);
-            proc = 0;
+            counter = 0;
         }
 
         /*! \brief -
@@ -79,7 +78,7 @@ template <class T> class a_filter {
                     else data[i] = T(0.0);
 
             prev = iniv;
-            proc = i;
+            counter = i;
         }        
 
         /*! \brief - copy of existing, except delay line */
@@ -88,9 +87,9 @@ template <class T> class a_filter {
             num(src.num),
             den(src.den),
             decimationf(src.decimationf),
-            m_type(src.m_type)
+            typef(src.typef)
         {
-            proc  = 0;
+            counter  = 0;
         }
 
         /*! \brief - new flter definition (including decimation factor) */
@@ -105,7 +104,7 @@ template <class T> class a_filter {
             if(_den) den = std::vector<T>(_den, &_den[N]);
            
             prev = T(0);
-            proc = 0;
+            counter = 0;
         }
 
         /*! \brief - free previsous allocation */

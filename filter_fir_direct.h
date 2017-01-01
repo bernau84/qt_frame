@@ -7,31 +7,32 @@ protected:
 	using a_filter<T>::data;
 	using a_filter<T>::num;
 	using a_filter<T>::den;
-	using a_filter<T>::proc;
+    using a_filter<T>::counter;
     using a_filter<T>::prev;
 	using a_filter<T>::decimationf;
-    using a_filter<T>::m_type;
-    using a_filter<T>::m_countdown;
+    using a_filter<T>::typef;
 
 public:
-    virtual T process(const T &feed, unsigned *countdown = NULL){
+    virtual T *proc(const T &feed, unsigned *count = NULL){
 
-        prev = 0;
-        int N = (num.size() < data.size()) ? num.size() : data.size();  //teor muze byt delka ruzna
+        int N = (num.size() < data.size()) ? num.size() : data.size();  //teor. muze byt delka ruzna
 
-        data[proc % data.size()] = feed;
+        data[counter++ % data.size()] = feed;
+        if(count) *count = counter;
 
-        if(0 == (m_countdown = (proc++ % decimationf))){
+        if(0 == (counter % decimationf)){
 
-            for(unsigned i=0; i<N; i++){
+            prev = 0;
+            for(int i=0; i<N; i++){
 
-                T v_i = data[(proc + i) % data.size()];
+                T v_i = data[(counter + i) % data.size()];
                 prev += num[num.size() - i] * v_i;   //nejstarsi data nasobime nejvyssimi koeficienty
             }
+
+            return &prev;
         }
 
-        if(countdown) *countdown = m_countdown;
-        return prev;  //pokud vypocet neprobihal (kvuli decimaci, vracime posledni vysledek)
+        return NULL;  //pokud vypocet neprobihal (kvuli decimaci) vracime null
     }
 
     /* frekvencni posuv fir charakteristiky
@@ -39,7 +40,7 @@ public:
      */
     static void fshift(double f, std::vector<T> &in){
 
-        for(int i=0; i<in.size(); i++)
+        for(unsigned i=0; i<in.size(); i++)
             in[i] *= cos(2*M_PI*f*i);
     }
 
@@ -61,13 +62,13 @@ public:
     t_filter_fir_direct(const a_filter<T> &src)
                    :a_filter<T>(src){
 
-        m_type = a_filter<T>::FIR_DIRECT1;
+        typef = a_filter<T>::FIR_DIRECT1;
     }
 
     t_filter_fir_direct(const T *_num, int32_t _N, int32_t _decimationf = 1)
                    :a_filter<T>(_num, NULL, _N, _decimationf){
 
-        m_type = a_filter<T>::FIR_DIRECT1;
+        typef = a_filter<T>::FIR_DIRECT1;
     }
 
     virtual ~t_filter_fir_direct(){;}
@@ -82,7 +83,7 @@ protected:
 //    using t_filter_fir_direct<T>::den;
 //    using t_filter_fir_direct<T>::proc;
 //    using t_filter_fir_direct<T>::decimationf;
-    using t_filter_fir_direct<T>::m_type;
+    using t_filter_fir_direct<T>::typef;
 
 private:
     e_win  m_win;
@@ -90,7 +91,7 @@ private:
 
 public:
     using t_filter_fir_direct<T>::fshift;
-    using t_filter_fir_direct<T>::process;
+    using t_filter_fir_direct<T>::counter;
 
 
     /* vygeneruje inpulsni odezvu idelaniho low pass fir filtru delky N a mezni frekvence fm
@@ -154,7 +155,7 @@ public:
     t_filter_wfir(const a_filter<T> &src)
                    :a_filter<T>(src)
     {
-        m_type = a_filter<T>::FIR_DIRECT1;
+        typef = a_filter<T>::FIR_DIRECT1;
     }
 
     /* v par musi byt je celkova sirka pasma B <0, 1> kde 0.5 je idealni half pass
@@ -167,7 +168,7 @@ public:
                     m_N(N)
     {
         redesign(par);
-        m_type = a_filter<T>::FIR_DIRECT1;
+        typef = a_filter<T>::FIR_DIRECT1;
     }
 
     t_filter_wfir(int32_t N, e_win w, const char *config = "#B=500#fs=1000", int32_t _decimationf = 1)
@@ -176,7 +177,7 @@ public:
                     m_N(N)
     {
         redesign(config);
-        m_type = a_filter<T>::FIR_DIRECT1;
+        typef = a_filter<T>::FIR_DIRECT1;
     }
 
     virtual ~t_filter_wfir(){;}

@@ -40,8 +40,8 @@ class t_rt_generator : public a_rt_base {
     Q_OBJECT
 
 protected:
-    double  fs;
-    double  ms_period;
+    int  fs;
+    int  ms_period;
     double  ms_proc;
 
 private:
@@ -76,6 +76,7 @@ private:
                 m_data->a = x;
                 m_data->f = fs / 2;  //frekvence vzorku je nyquistovka
                 m_data->t = ms_proc - ms_per*x.size();  //znacka 1-ho vzorku
+
                 QSharedPointer<i_rt_exchange> pp(m_data);
                 LOG(INFO) << m_data->t/1000.0 << "[s]/" 
                           << x.size() << "samples out";

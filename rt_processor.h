@@ -36,35 +36,19 @@ private:
     }
 };
 
-
 class t_rt_filter : public a_rt_base {
 
     Q_OBJECT
 
 protected:
-    double  fs;
-    double  ms_period;
-    double  ms_proc;
+    int fs;
+    int ms_period;
+    int fc;
 
 private:
     a_filter<double> &m_filter;
-    QElapsedTimer elapsed;
-    QVector<double> x;
     QVector<double>::Iterator xi;
     t_rt_filter_ex *m_data;
-
-    void _filter(double *a, int n){
-
-        for(int i=0; i<n; i++)
-            if(0 == m_filter.process(*a++)){
-
-                //write to output
-                if(m_data == NULL){
-
-                    m_data = new t_rt_filter_ex()
-                }
-            }
-    }
 
     /*! init privates from configuration */
     virtual int reload(int p){
@@ -79,27 +63,52 @@ private:
             return 0;
 
         int i_fs = p->f_f(0) * 2; //z nyguista na fs + zaokrouhleni na cele Hz
-        if(fs != i_fs)
-            on_stop(0);  //zmena vzorkovacky - musime zalozit novy soubor
+        if(fs != i_fs){
+            on_start(0);  //zmena vzorkovacky - reset filtru
+            fs = i_fs;
+        }
 
         if(p->n() == 0)
             return 0;
 
-        double *a = p->f_a();
+        const double *a = p->f_a();
+        QVector<double> d;
         if(NULL == a){
 
-            QVector<double> d(p->n());  //floatovy buffer si musime vyrobit
+            d.resize(p->n());  //floatovy buffer si musime vyrobit
             for(int i=0; i < p->n(); i++) d[i] = p->f_a(i);
+            a = d.constData();
         }
 
+        for(int i=0; i<p->n(); i++){
 
+            unsigned total = 0;
+            double *out = m_filter.proc(*a++, &total);
+            if(out){  // != 0 refresh
 
-        return file->write(d.constData(), p->n());
-    }
+                if(m_data == NULL)
+                    if((m_data = new t_rt_filter_ex())){  //alokujem novy buffer - stary se uvolni diky SharedPnt
 
-    void timerEvent(QTimerEvent *event){
-        Q_UNUSED(event);
-        proc(NULL);
+                        m_data->a.resize(fs / ms_period);
+                        m_data->f = fc;
+                        m_data->t = (1.0 * total) / fs;
+
+                        xi = m_data->a.begin();
+                    }
+
+                *xi++ = *out;
+                if(xi != m_data->a.end())
+                    continue;
+
+                QSharedPointer<i_rt_exchange> pp(m_data);
+                LOG(INFO) << m_data->t/1000.0 << "[s]/"
+                          << m_data->a.size() << "samples filtered-out";
+
+                emit update(pp);
+            }
+        }
+
+        return 1;
     }
 
 public slots:
@@ -107,28 +116,22 @@ public slots:
     virtual void on_start(int p){
 
         Q_UNUSED(p);
-        id_timer = startTimer(ms_period);
-        x.resize(fs / ms_period);  //reserve nefunguje jak potrebujem
-        xi = x.begin();
-        elapsed.start();
-        ms_proc = 0;
+        m_filter.reset();
     }
 
     virtual void on_stop(int p){
 
         Q_UNUSED(p);
-        m_filter.reset();
     }
 
 public:
-    t_rt_filter(const QString &js_config, std::function<double(double t)> _f_sample, QObject *parent = NULL):
+    t_rt_filter(const QString &js_config, a_filter<double> &_f_filter, QObject *parent = NULL):
       a_rt_base(js_config, parent),
-      f_sample(_f_sample)
+      m_filter(_f_filter)
     {
-        //by default - v ramci on-start z konfigu do budoucna
-        ms_period = 50;
         fs = 8000;
-        ms_proc = 0;
+        ms_period = 50;
+        fc = 0; //eh - jen predpokladame ze jde o low pass
     }
 
     virtual ~t_rt_filter(){}

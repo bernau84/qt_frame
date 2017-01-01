@@ -3,6 +3,11 @@
 
 #include <stdint.h>
 
+/*! \typedef time amplitude sample pair */
+typedef std::pair<double, double> t_f64_ta;
+typedef std::pair<int32_t, int32_t> t_i32_ta;
+
+/*! \class time, amplitude, frequnecy data interface */
 class i_rt_exchange {
 
 public:
