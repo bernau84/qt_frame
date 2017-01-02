@@ -1,7 +1,6 @@
 #ifndef RT_PROCESSOR_H
 #define RT_PROCESSOR_H
 
-
 #include "filter_a.h"
 #include "rt_base_a.h"
 #include <QElapsedTimer>
@@ -131,7 +130,7 @@ public:
     {
         fs = 8000;
         ms_period = 50;
-        fc = 0; //eh - jen predpokladame ze jde o low pass
+        fc = m_filter[s_wf_F_central]; //neni vyplneno, bude tam 0 jako by slo o low pass
     }
 
     virtual ~t_rt_filter(){}

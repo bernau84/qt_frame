@@ -14,7 +14,8 @@ CONFIG -= app_bundle
 
 TEMPLATE = app
 
-SOURCES += main.cpp
+SOURCES += main.cpp \
+    f_props.cpp
 
 HEADERS += \
     rt_setup.h \
@@ -29,4 +30,5 @@ HEADERS += \
     filter_a.h \
     filter_fir_direct.h \
     f_windowing.h \
-    rt_processor.h
+    rt_processor.h \
+    f_props.h

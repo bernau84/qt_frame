@@ -11,6 +11,7 @@ protected:
     using a_filter<T>::prev;
 	using a_filter<T>::decimationf;
     using a_filter<T>::typef;
+    using a_filter<T>::par;
 
 public:
     virtual T *proc(const T &feed, unsigned *count = NULL){
@@ -78,12 +79,10 @@ public:
 template <class T> class t_filter_wfir : public t_filter_fir_direct<T> {
 
 protected:
-//    using t_filter_fir_direct<T>::data;
     using t_filter_fir_direct<T>::num;
-//    using t_filter_fir_direct<T>::den;
-//    using t_filter_fir_direct<T>::proc;
-//    using t_filter_fir_direct<T>::decimationf;
     using t_filter_fir_direct<T>::typef;
+    using t_filter_fir_direct<T>::par;
+    using t_filter_fir_direct<T>::counter;
 
 private:
     e_win  m_win;
@@ -91,7 +90,7 @@ private:
 
 public:
     using t_filter_fir_direct<T>::fshift;
-    using t_filter_fir_direct<T>::counter;
+
 
 
     /* vygeneruje inpulsni odezvu idelaniho low pass fir filtru delky N a mezni frekvence fm
@@ -126,6 +125,8 @@ public:
      * fc [Hz] (0, f_nyq) centralni frekvence
      **/
     void redesign(t_tf_props &p){
+
+        par = p;  //save
 
         double fm = 1.0; //default - udelame half band
         double A = 1.0;
@@ -162,7 +163,7 @@ public:
      * pozor B se zadava jako idealni LP takze musi byt 2*fm (mezni frekvence)
      * fc je centralni frekvence pro realizaci bp, resp hp
      **/
-    t_filter_wfir(int32_t N, e_win w, t_tf_props &par, int32_t _decimationf = 1)
+    t_filter_wfir(int32_t N, e_win w, t_tf_props &_par, int32_t _decimationf = 1)
                    :t_filter_fir_direct<T>(NULL, N, _decimationf),
                     m_win(w),
                     m_N(N)

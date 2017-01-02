@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stdarg.h>
 #include <vector>
+#include "f_props.h"
 
 /*! \class template of t_pFilter
  * \brief - pure virtual ancestor of SISO digital filter
@@ -36,6 +37,8 @@ template <class T> class a_filter {
         uint64_t counter;     //index zracovaneho vzorku (inkrement)
         T prev;    //zaloha posledniho vysledeku
 
+        t_tf_props par;  //info parameters (B, fc, TA, ..) see f_props.h
+
     public:
 
         /*! \brief - defines behaviour of filter,
@@ -49,6 +52,12 @@ template <class T> class a_filter {
 
         /*! \brief - return last filtering result (cache for deciamtion purpose) */
         T last(){ return prev; }
+
+        /*! \brief - filter has some info properties */
+        bool has_props(){ return !par.empty(); }
+
+        /*! \brief - info properties getter */
+        int operator[](const char *name){ return par[name]; }
 
         /*! \brief - inicialize shift register
          */

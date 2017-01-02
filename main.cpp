@@ -1,10 +1,11 @@
 #include <QCoreApplication>
+
+#include "easylogging++.h"
+
 #include "rt_audioinput.h"
 #include "rt_recorder.h"
 #include "rt_generator.h"
 #include "rt_wavinput.h"
-#include "f_windowing.h"
-#include "easylogging++.h"
 #include "filter_fir_direct.h"
 
 INITIALIZE_EASYLOGGINGPP
@@ -25,7 +26,8 @@ int main(int argc, char *argv[])
     wi_hann.log();
 
     t_filter_wfir<double> wfir(8, WRECT, "#B=500#fs=1000");
-    wfir.proc(1);
+    for(int i=0; i<16; i++)
+        LOG(INFO) << i << wfir.proc(1);
 
     return 0;
 
