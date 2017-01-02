@@ -1,7 +1,7 @@
 #include "filter_a.h"
 #include "f_windowing.h"
 
-template <class T> class t_filter_fir_direct : public a_filter<T> {
+template <class T> class t_filter_fir : public a_filter<T> {
 
 protected:
 	using a_filter<T>::data;
@@ -60,29 +60,29 @@ public:
         decimationf = _decimationf;
     }
 
-    t_filter_fir_direct(const a_filter<T> &src)
+    t_filter_fir(const a_filter<T> &src)
                    :a_filter<T>(src){
 
         typef = a_filter<T>::FIR_DIRECT1;
     }
 
-    t_filter_fir_direct(const T *_num, int32_t _N, int32_t _decimationf = 1)
+    t_filter_fir(const T *_num, int32_t _N, int32_t _decimationf = 1)
                    :a_filter<T>(_num, NULL, _N, _decimationf){
 
         typef = a_filter<T>::FIR_DIRECT1;
     }
 
-    virtual ~t_filter_fir_direct(){;}
+    virtual ~t_filter_fir(){;}
 };
 
 
-template <class T> class t_filter_wfir : public t_filter_fir_direct<T> {
+template <class T> class t_filter_wfir : public t_filter_fir<T> {
 
 protected:
-    using t_filter_fir_direct<T>::num;
-    using t_filter_fir_direct<T>::typef;
-    using t_filter_fir_direct<T>::par;
-    using t_filter_fir_direct<T>::counter;
+    using t_filter_fir<T>::num;
+    using t_filter_fir<T>::typef;
+    using t_filter_fir<T>::par;
+    using t_filter_fir<T>::counter;
 
 private:
     e_win  m_win;

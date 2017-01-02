@@ -28,7 +28,8 @@ HEADERS += \
     rt_generator.h \
     rt_wavinput.h \
     filter_a.h \
-    filter_fir_direct.h \
     f_windowing.h \
     rt_processor.h \
-    f_props.h
+    f_props.h \
+    filter_fir.h \
+    filter_avr.h

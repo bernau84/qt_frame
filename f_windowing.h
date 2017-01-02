@@ -15,7 +15,8 @@ enum e_win {
     WRECT = 0x18,
     WBRTL = 0x20,
     WGAUS = 0x21,
-    WUSER = 0x80
+    WEXPO = 0x22, //TD
+    WUSER = 0x80    //TD
 };
 
 static t_tf_props fwin_pro_0;  //empty settings

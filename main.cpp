@@ -6,7 +6,7 @@
 #include "rt_recorder.h"
 #include "rt_generator.h"
 #include "rt_wavinput.h"
-#include "filter_fir_direct.h"
+#include "filter_fir.h"
 
 INITIALIZE_EASYLOGGINGPP
 
@@ -25,9 +25,11 @@ int main(int argc, char *argv[])
     LOG(INFO) << "[0]" << wi_hann[0] << " [4]" << wi_hann[4];
     wi_hann.log();
 
-    t_filter_wfir<double> wfir(8, WRECT, "#B=500#fs=1000");
+    t_filter_fir_direct<double> dfir();
+
+    t_filter_wfir<double> wfir(8, WHAMM, "#B=500#fs=1000");
     for(int i=0; i<16; i++)
-        LOG(INFO) << i << wfir.proc(1);
+        LOG(INFO) << i << " " << *(wfir.proc(1));
 
     return 0;
 
