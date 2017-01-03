@@ -1,3 +1,5 @@
+#ifndef _RT_FILTERA_H_
+#define _RT_FILTERA_H_
 
 #include <stdint.h>
 #include <stdarg.h>
@@ -122,3 +124,4 @@ template <class T> class a_filter {
         }
 };
 
+#endif //_RT_FILTERA_H_

@@ -27,7 +27,7 @@ public:
             for(int i=0; i<N; i++){
 
                 T v_i = data[(counter + i) % data.size()];
-                prev += num[num.size() - i] * v_i;   //nejstarsi data nasobime nejvyssimi koeficienty
+                prev += num[num.size() - i - 1] * v_i;   //nejstarsi data nasobime nejvyssimi koeficienty
             }
 
             return &prev;
@@ -89,7 +89,7 @@ private:
     int m_N;
 
 public:
-    using t_filter_fir_direct<T>::fshift;
+    using t_filter_fir<T>::fshift;
 
 
 
@@ -164,7 +164,7 @@ public:
      * fc je centralni frekvence pro realizaci bp, resp hp
      **/
     t_filter_wfir(int32_t N, e_win w, t_tf_props &_par, int32_t _decimationf = 1)
-                   :t_filter_fir_direct<T>(NULL, N, _decimationf),
+                   :t_filter_fir<T>(NULL, N, _decimationf),
                     m_win(w),
                     m_N(N)
     {
@@ -173,7 +173,7 @@ public:
     }
 
     t_filter_wfir(int32_t N, e_win w, const char *config = "#B=500#fs=1000", int32_t _decimationf = 1)
-                   :t_filter_fir_direct<T>(NULL, N, _decimationf),
+                   :t_filter_fir<T>(NULL, N, _decimationf),
                     m_win(w),
                     m_N(N)
     {

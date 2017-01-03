@@ -81,16 +81,16 @@ private:
 
         for(int i=0; i<p->n(); i++){
 
-            unsigned total = 0;
-            double *out = m_filter.proc(*a++, &total);
+            unsigned ntotal = 0;
+            double *out = m_filter.proc(*a++, &ntotal);
             if(out){  // != 0 refresh
 
                 if(m_data == NULL)
                     if((m_data = new t_rt_filter_ex())){  //alokujem novy buffer - stary se uvolni diky SharedPnt
 
-                        m_data->a.resize(fs / ms_period);
+                        m_data->a.resize((fs * ms_period) / 1000);
                         m_data->f = fc;
-                        m_data->t = (1.0 * total) / fs;
+                        m_data->t = (1.0 * ntotal) / fs;
 
                         xi = m_data->a.begin();
                     }
@@ -104,6 +104,7 @@ private:
                           << m_data->a.size() << "samples filtered-out";
 
                 emit update(pp);
+                m_data = NULL;
             }
         }
 
@@ -116,6 +117,10 @@ public slots:
 
         Q_UNUSED(p);
         m_filter.reset();
+
+        if(m_data)
+            delete(m_data);
+        m_data = NULL;
     }
 
     virtual void on_stop(int p){
@@ -128,9 +133,10 @@ public:
       a_rt_base(js_config, parent),
       m_filter(_f_filter)
     {
-        fs = 8000;
+        fs = 0;
         ms_period = 50;
-        fc = m_filter[s_wf_F_central]; //neni vyplneno, bude tam 0 jako by slo o low pass
+        fc = m_filter[s_wf_F_central]; //neni vyplneno, bude tam 0 jao by slo o low pass
+        m_data = NULL;
     }
 
     virtual ~t_rt_filter(){}

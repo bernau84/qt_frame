@@ -74,7 +74,9 @@ public:
     t_rt_recorder(const QString &js_config, QObject *parent = NULL):
         a_rt_base(js_config, parent)
     {
-        path = "out.wav";
+        t_setup_entry e;
+
+        path = (par.ask("path", &e)) ? e.get().toString() : "out.wav";
         file = NULL;
     }
 };
