@@ -101,7 +101,8 @@ private:
 
                 QSharedPointer<i_rt_exchange> pp(m_data);
                 LOG(INFO) << m_data->t/1000.0 << "[s]/"
-                          << m_data->a.size() << "samples filtered-out";
+                          << m_data->a.size() << "samples filtered-out"
+                          << "dbg" << m_data->a;
 
                 emit update(pp);
                 m_data = NULL;
@@ -135,7 +136,7 @@ public:
     {
         fs = 0;
         ms_period = 50;
-        fc = m_filter[s_wf_F_central]; //neni vyplneno, bude tam 0 jao by slo o low pass
+        fc = m_filter[s_wf_f_ce]; //neni vyplneno, bude tam 0 jao by slo o low pass
         m_data = NULL;
     }
 

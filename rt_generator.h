@@ -62,7 +62,7 @@ private:
     virtual int proc(i_rt_exchange *p){
         Q_UNUSED(p);
         double ms_now = elapsed.elapsed();
-        double ms_per = 1000 / fs;
+        double ms_per = 1000.0 / fs;
         while((ms_proc + ms_per) < ms_now){ //inkrementujeme dokud sme ve vzorkovacim okne
 
             *xi++ = f_sample(ms_proc/1000);  //lambda generator
@@ -80,6 +80,7 @@ private:
                 QSharedPointer<i_rt_exchange> pp(m_data);
                 LOG(INFO) << m_data->t/1000.0 << "[s]/" 
                           << x.size() << "samples out";
+
                 emit update(pp);
             }
         }

@@ -137,7 +137,7 @@ public:
         if(p.end() != (it = p.find(s_wf_B))) B = it->second;
         if(p.end() != (it = p.find(s_wf_G))) G = it->second;
         if(p.end() != (it = p.find(s_wf_fs))) fs = it->second;
-        if(p.end() != (it = p.find(s_wf_F_central))) fc = it->second;
+        if(p.end() != (it = p.find(s_wf_f_ce))) fc = it->second;
 
         if(B && fs) fm = (1.0 * B/2) / fs;  //mezni fr je polovinou B u ideal LP
         if(G) A = pow(10, G/20.0);

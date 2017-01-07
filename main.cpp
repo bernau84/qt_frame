@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
     LOG(INFO) << "[0]" << wi_hann[0] << " [4]" << wi_hann[4];
     wi_hann.log();
 
-    double linavr[] = {1, 1, 1, 1, 1, 1, 1, 1};
+    double linavr[] = {1.0/8, 1.0/8, 1.0/8, 1.0/8, 1.0/8, 1.0/8, 1.0/8, 1.0/8};
     t_filter_fir<double> dfir(linavr, sizeof(linavr)/sizeof(double));
 
     for(int i=0; i<16; i++)  //impuslni odezva
@@ -41,14 +41,14 @@ int main(int argc, char *argv[])
         LOG(INFO) << i << " " << *(wfir.proc(1));
 
     t_rt_audioinput aud_src("");
-    t_rt_generator sig_src("", [](double t) -> double { return sin(2*M_PI*440*t); });
+    t_rt_generator sig_src("", [](double t) -> double { return sin(2*M_PI*2440*t); });
     t_rt_wavinput wav_src("");
 
     a_rt_base *src_sel = &sig_src;
 
     t_rt_filter fir_pro("", dfir);
-    t_rt_recorder pro_rec("{\"path\":{\"__def:\" : \"filtered.wav\"}}");
-    t_rt_recorder src_rec("{\"path\":{\"__def:\" : \"source.wav\"}}");
+    t_rt_recorder pro_rec("{\"path\":{\"__def\":\"filtered.wav\"}}");
+    t_rt_recorder src_rec("{\"path\":{\"__def\":\"source.wav\"}}");
 
     //aud_rec.connect(&sig_gen);
     src_rec.connect(src_sel);

@@ -50,7 +50,7 @@ template <typename T> T f_win(int i, int N, e_win w = WHAMM, const t_tf_props &p
             int B = 0, fs = 0, TA = 0;
             if(p.end() != (it = p.find(s_wf_B))) B = it->second;
             if(p.end() != (it = p.find(s_wf_fs))) fs = it->second;
-            if(p.end() != (it = p.find(s_wf_T_aver))) TA = it->second;
+            if(p.end() != (it = p.find(s_wf_TA))) TA = it->second;
 
 			T sigma = 0.5; //default
 			if(fs && B) sigma = (1.0 * B) / fs; //frekvencni design

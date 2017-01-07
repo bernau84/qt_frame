@@ -38,9 +38,9 @@ private:
     QJsonObject _path2json(const QString &conf){
 
         //filepath of json config dist.
-        if((false == QDir::isAbsolutePath(conf)) &&
-           (false == QDir::isRelativePath(conf)))
-            _str2json(conf.toLatin1());  //nejde o filepath -> zkusime primo json
+//        if((false == QDir::isAbsolutePath(conf)) && //is???Path nefunguje
+//           (false == QDir::isRelativePath(conf)))
+//            _str2json(conf.toLatin1());  //nejde o filepath -> zkusime primo json
 
         // default config
         QFile f_def(conf);  //from resources
@@ -49,8 +49,8 @@ private:
             QByteArray cons = f_def.read(64000);
             return _str2json(cons);
         }
-
-        return QJsonObject();
+        //nemuselo jit o soubor ale primo o json
+        return _str2json(conf.toLatin1());
     }
 
 
