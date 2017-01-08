@@ -32,4 +32,5 @@ HEADERS += \
     rt_processor.h \
     f_props.h \
     filter_fir.h \
-    filter_avr.h
+    filter_avr.h \
+    rt_audiooutput.h

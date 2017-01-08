@@ -12,14 +12,15 @@ private:
     friend class t_rt_generator;
 
     QVector<double> a;
-    double t;
+    double t0;
+    double t1;
     double f;
 
     /*! length of individual array */
     virtual int n(){ return a.size(); }
 
     /*! indexed acces */
-    virtual double f_t(unsigned i){ return (f > 0) ? (t + ((i+1) / f)) : t; }
+    virtual double f_t(unsigned i){ return (t0 + (i+1)*(t1 - t0)); }
     virtual double f_a(unsigned i){ return (1.0 * a[i]) / (1 << 15); }
     virtual double f_f(unsigned i){ i = i; return f; }
 
@@ -75,10 +76,11 @@ private:
 
                 m_data->a = x;
                 m_data->f = fs / 2;  //frekvence vzorku je nyquistovka
-                m_data->t = ms_proc - ms_per*x.size();  //znacka 1-ho vzorku
+                m_data->t1 = m_data->t0 = (ms_proc - ms_per*x.size())/1000.0;  //znacka 1-ho vzorku
+                m_data->t1 += ms_per/1000;
 
                 QSharedPointer<i_rt_exchange> pp(m_data);
-                LOG(INFO) << m_data->t/1000.0 << "[s]/" 
+                LOG(INFO) << m_data->t0 << "[s]/"
                           << x.size() << "samples out";
 
                 emit update(pp);

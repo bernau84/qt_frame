@@ -27,7 +27,7 @@ private:
         if(!p)
             return 0;
 
-        int i_fs = p->f_f(0) * 2; //z nyguista na fs + zaokrouhleni na cele Hz
+        int i_fs = round(1.0 / (p->f_t(1) - p->f_t(0)));
         if(fs != i_fs)
             on_stop(0);  //zmena vzorkovacky - musime zalozit novy soubor
 

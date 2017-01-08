@@ -13,14 +13,15 @@ private:
     friend class t_rt_filter;
 
     QVector<double> a;
-    double t;
+    double t0;
+    double t1;
     double f;
 
     /*! length of individual array */
     virtual int n(){ return a.size(); }
 
     /*! indexed acces */
-    virtual double f_t(unsigned i){ return (f > 0) ? (t + ((i+1) / f)) : t; }
+    virtual double f_t(unsigned i){ return (t0 + (i+1)*(t1 - t0)); }
     virtual double f_a(unsigned i){ return (1.0 * a[i]) / (1 << 15); }
     virtual double f_f(unsigned i){ i = i; return f; }
 
@@ -61,7 +62,7 @@ private:
         if(!p)
             return 0;
 
-        int i_fs = p->f_f(0) * 2; //z nyguista na fs + zaokrouhleni na cele Hz
+        int i_fs = round(1.0 / (p->f_t(1) - p->f_t(0)));
         if(fs != i_fs){
             on_start(0);  //zmena vzorkovacky - reset filtru
             fs = i_fs;
@@ -89,9 +90,9 @@ private:
                     if((m_data = new t_rt_filter_ex())){  //alokujem novy buffer - stary se uvolni diky SharedPnt
 
                         m_data->a.resize((fs * ms_period) / 1000);
-                        m_data->f = fc;
-                        m_data->t = (1.0 * ntotal) / fs;
-
+                        m_data->f = fs; //fc;
+                        m_data->t1 = m_data->t0 = (1.0 * ntotal) / fs;
+                        m_data->t1 += 1.0 / fs;
                         xi = m_data->a.begin();
                     }
 
@@ -100,9 +101,9 @@ private:
                     continue;
 
                 QSharedPointer<i_rt_exchange> pp(m_data);
-                LOG(INFO) << m_data->t/1000.0 << "[s]/"
-                          << m_data->a.size() << "samples filtered-out"
-                          << "dbg" << m_data->a;
+                LOG(INFO) << m_data->t0/1000.0 << "[s]/"
+                          << m_data->a.size() << "samples filtered-out";
+                //          << "dbg" << m_data->a;
 
                 emit update(pp);
                 m_data = NULL;
