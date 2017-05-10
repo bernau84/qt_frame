@@ -5,6 +5,7 @@
 #include "filter_fir.h"
 
 #include "rt_audioinput.h"
+#include "rt_audiooutput.h"
 #include "rt_recorder.h"
 #include "rt_generator.h"
 #include "rt_wavinput.h"
@@ -47,18 +48,22 @@ int main(int argc, char *argv[])
     a_rt_base *src_sel = &sig_src;
 
     t_rt_filter fir_pro("", dfir);
-    t_rt_recorder pro_rec("{\"path\":{\"__def\":\"filtered.wav\"}}");
-    t_rt_recorder src_rec("{\"path\":{\"__def\":\"source.wav\"}}");
+    t_rt_recorder pro_rec("{\"path\":{\"__def\":\"filteredx.wav\"}}");
+    t_rt_recorder src_rec("{\"path\":{\"__def\":\"sourcex.wav\"}}");
+    t_rt_audiooutput aud_out("");
 
     //aud_rec.connect(&sig_gen);
-    src_rec.connect(src_sel);
-    fir_pro.connect(src_sel);
-    pro_rec.connect(&fir_pro);
+//    src_rec.connect(src_sel);
+//    fir_pro.connect(src_sel);
+//    pro_rec.connect(&fir_pro);
+    aud_out.connect(src_sel);
 
+    aud_out.on_start(0);
     src_sel->on_start(0);
-    src_rec.on_start(0);
-    fir_pro.on_start(0);
-    pro_rec.on_start(0);
+//    src_rec.on_start(0);
+//    fir_pro.on_start(0);
+//    pro_rec.on_start(0);
+
 
     /*
     aud_src.on_start(0);

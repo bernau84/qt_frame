@@ -21,7 +21,7 @@ private:
 
     /*! indexed acces */
     virtual double f_t(unsigned i){ return (t0 + (i+1)*(t1 - t0)); }
-    virtual double f_a(unsigned i){ return (1.0 * a[i]) / (1 << 15); }
+    virtual double f_a(unsigned i){ return a[i]; }
     virtual double f_f(unsigned i){ i = i; return f; }
 
     /*! pointer to array */

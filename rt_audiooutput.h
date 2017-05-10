@@ -35,7 +35,7 @@ private:
         int i_fs = 1.0 / (p->f_t(1) - p->f_t(0));
         if(abs(m_format.sampleRate() - i_fs) > 1){  //rozdil do 2Hz ignorujemem
 
-            on_start(i_fs);  //zmena vzorkovacky - musime zalozit novy soubor
+            on_start(i_fs);  //zmena vzorkovacky
         }
 
         QVector<int16_t> d(p->n());  //floatovy buffer si musime vyrobit
