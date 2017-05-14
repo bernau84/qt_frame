@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
         LOG(INFO) << i << " " << *(wfir.proc(1));
 
     t_rt_audioinput aud_src("");
-    t_rt_generator sig_src("", [](double t) -> double { return sin(2*M_PI*2440*t); });
+    t_rt_generator sig_src("", [](double t) -> double { return 0.8*sin(2*M_PI*2000*t); });
     t_rt_wavinput wav_src("");
 
     a_rt_base *src_sel = &sig_src;

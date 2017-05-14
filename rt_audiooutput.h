@@ -19,6 +19,8 @@ private:
     QAudioFormat m_format;
     QAudioOutput *m_audioOutput;
     QIODevice *m_output;
+    QVector<int16_t> m_buffer;
+    QVector<int16_t>::Iterator m_it;
 
     /*! init privates from configuration */
     virtual int reload(int p){
@@ -38,10 +40,16 @@ private:
             on_start(i_fs);  //zmena vzorkovacky
         }
 
-        QVector<int16_t> d(p->n());  //floatovy buffer si musime vyrobit
-        for(int i=0; i < p->n(); i++) d[i] = p->f_a(i) * (1 << 15);
+        for(int i=0; i < p->n(); i++){
 
-        return m_output->write((const char *)d.constData(), p->n());
+            *m_it++ = p->f_a(i) * (1 << 15);
+            if(m_it == m_buffer.end()){
+
+                m_it = m_buffer.begin();
+                m_output->write((const char *)m_buffer.constData(), m_buffer.size()*sizeof(int16_t));
+                LOG(INFO) << m_buffer.size() << "samples playback";
+            }
+        }
     }
 
 public:
@@ -68,7 +76,21 @@ public:
 
         LOG(INFO) << m_device.deviceName();
         m_audioOutput = new QAudioOutput(m_device, m_format, this);
+
         m_output = m_audioOutput->start();
+
+        LOG(INFO) << "rt_audiooutput::periodSize()" << m_audioOutput->periodSize();
+        m_buffer.resize(m_audioOutput->periodSize() / sizeof(int16_t));  //na rozdil od reserve nuluje
+        m_it = m_buffer.begin();
+
+        LOG(INFO) << "rt_audiooutput::bufferSize()" << m_buffer.size();
+        m_output->write((const char *)m_buffer.constData(), m_buffer.size()*sizeof(int16_t)); //o jednu periodu posuneme plaback aby v tom nelupalo
+        m_output->write((const char *)m_buffer.constData(), m_buffer.size()*sizeof(int16_t)); //o jednu periodu posuneme plaback aby v tom nelupalo
+//        m_output->write((const char *)m_buffer.constData(), m_buffer.size()*sizeof(int16_t)); //o jednu periodu posuneme plaback aby v tom nelupalo
+//        m_output->write((const char *)m_buffer.constData(), m_buffer.size()*sizeof(int16_t)); //o jednu periodu posuneme plaback aby v tom nelupalo
+//        m_output->write((const char *)m_buffer.constData(), m_buffer.size()*sizeof(int16_t)); //o jednu periodu posuneme plaback aby v tom nelupalo
+//        m_output->write((const char *)m_buffer.constData(), m_buffer.size()*sizeof(int16_t)); //o jednu periodu posuneme plaback aby v tom nelupalo
+
     }
 
     /*! */
