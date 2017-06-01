@@ -14,23 +14,38 @@ CONFIG -= app_bundle
 
 TEMPLATE = app
 
+INCLUDEPATH += frame \
+        filter \
+        wav \
+        control
+
+#DEPENDPATH += $$PWD/control
+#include(control/vi_interface.pri) - nefunguje?!
+
 SOURCES += main.cpp \
-    f_props.cpp
+    filter/f_props.cpp
 
 HEADERS += \
-    rt_setup.h \
-    rt_exchange_i.h \
-    rt_base_a.h \
-    rt_audioinput.h \
-    rt_recorder.h \
-    wav_read_file.h \
-    wav_write_file.h \
-    rt_generator.h \
-    rt_wavinput.h \
-    filter_a.h \
-    f_windowing.h \
-    rt_processor.h \
-    f_props.h \
-    filter_fir.h \
-    filter_avr.h \
-    rt_audiooutput.h
+    frame/rt_setup.h \
+    frame/rt_exchange_i.h \
+    frame/rt_base_a.h \
+    frame/rt_audioinput.h \
+    frame/rt_recorder.h \
+    wav/wav_read_file.h \
+    wav/wav_write_file.h \
+    frame/rt_generator.h \
+    frame/rt_wavinput.h \
+    filter/filter_a.h \
+    filter/f_windowing.h \
+    frame/rt_processor.h \
+    filter/f_props.h \
+    filter/filter_fir.h \
+    filter/filter_avr.h \
+    frame/rt_audiooutput.h \
+    control/i_comm_io_generic.h \
+    control/i_comm_parser.h \
+    control/t_comm_parser_string.h \
+    control/t_comm_io_std.h \
+    control/t_comm_io_tcp.h \
+    control/t_comm_parser_binary_ex.h \
+    control/t_comm_parser_binary.h
