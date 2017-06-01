@@ -6,6 +6,7 @@
 #include <QDir>
 #include <QJsonDocument>
 #include <QSharedPointer>
+#include <QKeyEvent>
 
 #include "rt_setup.h"
 #include "rt_exchange_i.h"
@@ -19,6 +20,11 @@ class a_rt_base;
 class a_rt_base : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(QString _name READ name WRITE rename) //QString fancy_name;
+    Q_PROPERTY(int _no READ no)
+
+protected:
+   t_rt_setup par;
 
 private:
 
@@ -62,9 +68,28 @@ private:
     /*! here do the work */
     virtual int proc(i_rt_exchange *p) = 0;
 
-protected:
-   t_rt_setup par;
-   QString fancy_name;
+public:
+    QString name(){
+        return _name;
+    }
+
+    void rename(QString name){
+        _name = name;
+    }
+
+    int no(){
+        return _no;
+    }
+
+    /*! key/async event processing */
+    virtual bool event(QEvent* ev)
+    {
+        if (ev->type() == QEvent::KeyPress) {
+            QKeyEvent *ke = static_cast<QKeyEvent *>(ev);
+            LOG(INFO) << fancy_name << "captured [" << ke->text << "] key";
+        }
+        return QObject::event(ev);
+    }
 
 signals:
     void update(QSharedPointer<i_rt_exchange> d);
@@ -135,7 +160,9 @@ public:
         QObject(parent),
         par(_path2json(conf))
     {
-        LOG(INFO) << rt_base_counter++;
+        _no = rt_base_counter++;
+        _name = QString("node[%1]").arg(_no);
+        LOG(INFO) << _name << "created";
     }
 
     virtual ~a_rt_base(){;}

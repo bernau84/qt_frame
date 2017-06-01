@@ -1,5 +1,5 @@
 QT += core multimedia
-QT -= gui
+QT += gui
 
 DEFINES += ELPP_QT_LOGGING    \
           ELPP_STL_LOGGING   \
@@ -33,4 +33,5 @@ HEADERS += \
     f_props.h \
     filter_fir.h \
     filter_avr.h \
-    rt_audiooutput.h
+    rt_audiooutput.h \
+    rt_keycontrol.h
