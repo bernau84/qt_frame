@@ -4,22 +4,32 @@
 #include "t_comm_parser_string.h"
 #include "i_comm_io_generic.h"
 #include <iostream>
+#include <thread>
+#include <string>
+#include <condition_variable>
+#include <chrono>
+#include <mutex>
+#include <queue>
 
 class t_comm_stdte : public i_comm_generic {
 
     Q_OBJECT
 
 private:
-    t_comm_parser_string parser;
+    std::mutex mu;
+    std::atomic_bool running;
+    std::thread reader;
+    std::string readed;
 
 public:
     virtual void on_read(QByteArray &dt){
 
-        if(std::cin.rdbuf()->in_avail() == 0)
-            return;
-
-        char c = std::cin.get();  //v terminalu qt creatoru + win to zrovna nefunguje, ani cin.readsome(&c, 1)
-        if(c) dt.append(c);
+        std::lock_guard<std::mutex> tl(mu);  //odemkne po ukonceni platnosti promenne, RAII principy
+        if(!readed.empty())
+        {
+            dt.append(readed);
+            readed.clear();
+        }
     }
 
     virtual void on_write(QByteArray &dt){
@@ -27,15 +37,29 @@ public:
         std::cout << dt.toStdString();
     }
 
-    t_comm_stdte (const char *orders[] = NULL, QObject *parent = NULL):
-        i_comm_generic(&parser, parent),
-        parser(orders)
+    t_comm_stdte (i_comm_parser *parser):
+        i_comm_generic(&parser),
+        running(true),
+        reader([&]()
+            {
+                while(running && std::cin)
+                {
+                    std::string s;
+                    s << std::cin;
+
+                    std::unique_lock<std::mutex> tl(mu);
+                    readed.append(s);
+                    mu.unlock();
+                }
+            })
     {
 
     }
 
     ~t_comm_stdte (){
 
+        running = false;
+        reader.join();
     }
 };
 
