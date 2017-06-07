@@ -12,7 +12,7 @@
 
 #include "easylogging++.h"
 
-static int rt_base_counter = 0;
+static int rt_base_counter = 1;  //0 bude mit rt_control
 
 class a_rt_base;
 

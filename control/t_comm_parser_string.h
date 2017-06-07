@@ -26,18 +26,16 @@ public:
 
         if((p == '\r') || (p == '\n')){
 
+            last = tmp;
+            tmp.clear();
+
             for(unsigned i=0; i<orders.size(); i++){
 
-                std::string s(tmp.begin(), tmp.end());
-                if(s.compare(orders[i])){
-
-                    last = tmp;
-                    tmp.clear();
+                std::string s(last.begin(), last.end());
+                if(s.compare(orders[i]))
                     return (e_comm_parser_res)i;
-                }
             }
 
-            tmp.clear();
             return ECOMM_PARSER_MISMATCH;
         }
 

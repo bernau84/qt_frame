@@ -15,21 +15,11 @@
 
 #define VI_COMM_REFRESH_RT  20  //definuje reakcni cas v ms
 
-enum e_commsta {
-
-    COMMSTA_UNKNOWN = 0,
-    COMMSTA_PREPARED,
-    COMMSTA_INPROC,
-    COMMSTA_ERROR
-};
-
-
 class i_comm_generic : public QObject {
 
     Q_OBJECT
 
 protected:
-    e_commsta sta;
     i_comm_parser *parser;
 
 private slots:
@@ -40,48 +30,40 @@ private slots:
     }
 
 signals:
-    void order(unsigned ord, QByteArray par);
+    void order(int ord, const QByteArray &par);
 
 public:
     virtual void on_read(QByteArray &dt) = 0;
     virtual void on_write(QByteArray &dt) = 0;
 
-    e_commsta health(){
-
-        return sta;
-    }
-
-    virtual void callback(int ord, QByteArray par){
+    virtual void callback(int ord, const QByteArray &par){
 
         ord = ord;  par = par;
         qDebug() << "ord" << ord << "par" << par;
     }
 
-    e_commsta refresh(){
+    e_comm_parser_res refresh(){
 
         QByteArray dt;
         on_read(dt);
         if(dt.isEmpty())
-            return sta;
+            return ECOMM_PARSER_WAITING_SYNC;
 
-        int ret;
+        int ret = 0;
         for(int i=0; i<dt.length(); i++)
             switch((ret = parser->feed(dt[i]))){
 
                 case ECOMM_PARSER_ERROR:
-                    sta = COMMSTA_ERROR;
-                break;
                 case ECOMM_PARSER_WAITING_SYNC:
                 case ECOMM_PARSER_WAITING_ENDOFORD:
-                    //nic
+                    return ret;
                 break;
                 case ECOMM_PARSER_MISMATCH:
-                    //sta = COMMSTA_UNKNOWN;
-                    //TODO: trace
-                break;
+                    //ale pokracujeme - vyhodime signal
+                    //duvodem muze byt treba jen to ze nemame v parseru zaregistrovany zadny order
+                    //ale radek sme prijali
                 default:
-                case ECOMM_PARSER_MATCH_ORDNO_0:
-
+                case ECOMM_PARSER_MATCH_ORDNO_0:                    
                     std::vector<uint8_t> st_ord = parser->getlast();
                     QByteArray qt_ord((const char *)st_ord.data(), (int)st_ord.size());
                     callback(ret, qt_ord);
@@ -96,11 +78,8 @@ public:
 
         on_write(cmd);
 
-        sta = COMMSTA_INPROC;
-        while((timeout > 0) && (sta == COMMSTA_INPROC)){
-
-            refresh();
-
+        while((timeout > 0) && (refresh() == COMMSTA_INPROC)){
+            //blokujici
             QMutex localMutex;
             localMutex.lock();
             QWaitCondition sleepSimulator;
@@ -115,8 +94,6 @@ public:
         QObject(parent),
         parser(_parser)
     {
-        sta = COMMSTA_UNKNOWN;
-
         if(VI_COMM_REFRESH_RT)
             this->startTimer(VI_COMM_REFRESH_RT);
     }

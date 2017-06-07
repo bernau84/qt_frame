@@ -49,4 +49,4 @@ HEADERS += \
     control/t_comm_io_tcp.h \
     control/t_comm_parser_binary_ex.h \
     control/t_comm_parser_binary.h \
-    control/t_comm_parser_bash.h
+    frame/rt_control.h
