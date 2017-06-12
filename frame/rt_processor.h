@@ -1,7 +1,8 @@
 #ifndef RT_PROCESSOR_H
 #define RT_PROCESSOR_H
 
-#include "filter_a.h"
+#include "filter_avr.h"
+#include "filter_fir.h"
 #include "rt_base_a.h"
 #include <QElapsedTimer>
 
@@ -46,9 +47,32 @@ protected:
     int fc;
 
 private:
-    a_filter<double> &m_filter;
+    a_filter<double> *m_filter;
     QVector<double>::Iterator xi;
     t_rt_filter_ex *m_data;
+
+    a_filter<double> *_filter_factory(const QString &props)
+    {
+        t_tf_props props = f_str2tf(props.toLatin1().constData());
+
+        a_filter::e_type ftype = a_filter::FIR_DIRECT1;
+        e_win fwin = WHANN;
+        int ford = 64;
+        int fdecim = 1;
+
+        if(props.find(s_wf_FILTER) != props.end()) ftype = props[s_wf_FILTER];
+        if(props.find(s_wf_WINDOW) != props.end()) fwin = props[s_wf_WINDOW];
+
+        switch(ftype)
+        {
+            case a_filter::FIR_DIRECT1:
+                return new t_filter_wfir(fwin, ford, props, fdecim);
+            break;
+            case a_filter::AVERAGING:
+                /*! \todo */
+            break;
+        }
+    }
 
     /*! init privates from configuration */
     virtual int reload(int p){
@@ -83,7 +107,7 @@ private:
         for(int i=0; i<p->n(); i++){
 
             unsigned ntotal = 0;
-            double *out = m_filter.proc(*a++, &ntotal);
+            double *out = m_filter->proc(*a++, &ntotal);
             if(out){  // != 0 refresh
 
                 if(m_data == NULL)
@@ -118,7 +142,7 @@ public slots:
     virtual void on_start(int p){
 
         Q_UNUSED(p);
-        m_filter.reset();
+        m_filter->reset();
 
         if(m_data)
             delete(m_data);
@@ -130,10 +154,27 @@ public slots:
         Q_UNUSED(p);
     }
 
+    virtual void on_change(){
+
+
+    }
+
 public:
     t_rt_filter(const QString &js_config, a_filter<double> &_f_filter, QObject *parent = NULL):
       a_rt_base(js_config, parent),
-      m_filter(_f_filter)
+      m_filter(&_f_filter)
+    {
+        fs = 0;
+        ms_period = 50;
+        fc = (*m_filter)[s_wf_f_ce]; //neni vyplneno, bude tam 0 jao by slo o low pass
+        m_data = NULL;
+    }
+
+    t_rt_filter(const QString &js_config, QObject *parent = NULL):
+      a_rt_base(js_config, parent),
+      m_filter(_filter_factory(par["window"].get().toString(),
+                                par["window"].get().toString(),
+                                 par["properties"].get().toString()))
     {
         fs = 0;
         ms_period = 50;

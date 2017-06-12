@@ -47,12 +47,13 @@ public:
 
     /* modifikace filtru posunem
      * */
-    void tune(double f){
-
-        fshift(f, num);
+    virtual void tune(t_tf_props &p)
+    {
+        if(p.end() != (it = p.find(s_wf_fs)))
+            fshift((double)it->second, num);
     }
 
-    /* becna modifikace za behu
+    /* obecna modifikace za behu
      * */
     void tune(const a_filter<T> &coe, int32_t _decimationf = 1){
 
@@ -124,7 +125,7 @@ public:
      * B [Hz] (0, fs) sirka pasma
      * fc [Hz] (0, f_nyq) centralni frekvence
      **/
-    void redesign(t_tf_props &p){
+    void tune(const t_tf_props &p){
 
         par = p;  //save
 
@@ -147,12 +148,6 @@ public:
         for(int i=0; i<m_N; i++) num[i] *= A;  //gain
     }
 
-    void redesign(const char *config = "#B=500#fs=1000"){
-
-        t_tf_props par = f_str2tf(config);
-        redesign(par);
-    }
-
     t_filter_wfir(const a_filter<T> &src)
                    :a_filter<T>(src)
     {
@@ -168,8 +163,7 @@ public:
                     m_win(w),
                     m_N(N)
     {
-        redesign(par);
-        typef = a_filter<T>::FIR_DIRECT1;
+        tune(par);
     }
 
     t_filter_wfir(int32_t N, e_win w, const char *config = "#B=500#fs=1000", int32_t _decimationf = 1)
@@ -177,8 +171,7 @@ public:
                     m_win(w),
                     m_N(N)
     {
-        redesign(config);
-        typef = a_filter<T>::FIR_DIRECT1;
+        tune(config);
     }
 
     virtual ~t_filter_wfir(){;}

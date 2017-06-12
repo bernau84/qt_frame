@@ -22,13 +22,18 @@ const char *s_wf_T_aver = "#TA"; //[us], averaging time = casova konstanta filtr
     F_PROPS_IT(B,[Hz],bandwith na -3dB (tam kde apml. spadne na sqrt(2)))\
     F_PROPS_IT(G,[dB],gain)\
     F_PROPS_IT(Beff,[Hz],efektivni bandwith)\
-    F_PROPS_IT(D,[dB/dec],tlumeni na dekade)\
-    F_PROPS_IT(Doct,[dB/oct],tlumeni na oktave)\
+    F_PROPS_IT(D,[dB/dec],dumping per decade)\
+    F_PROPS_IT(Doct,[dB/oct],dumping per ovtave)\
     F_PROPS_IT(GD,[us],group delay)\
-    F_PROPS_IT(f_sh,[Hz],posun idealni LP (zakladni) charaketeristiky)\
-    F_PROPS_IT(f_ce,[Hz],centralni frekvence)\
-    F_PROPS_IT(f_ty,[Hz],zakladni charakteristika filtru - lp/hp/bp/notch/all/diff...)\
-    F_PROPS_IT(TA,[us],casova konstanta filtru(averaging time))
+    F_PROPS_IT(f_sh,[Hz],ideal LP shift)\
+    F_PROPS_IT(f_ce,[Hz],central frequency)\
+    F_PROPS_IT(f_ty,[Hz],characteristic of filter - lp/hp/bp/notch/all/diff...)\
+    F_PROPS_IT(TA,[us],time contant of filter (averaging time))\
+    F_PROPS_IT(N,[1..9999],order/number of coeficient)\
+    F_PROPS_IT(RES,[-256..+256],resample order of interpolator(-) / decimator(+))\
+    F_PROPS_IT(FILTER,[IIRDIR1|IIRDIR2|IIRLATTICE|IIRBIQUADR|FIRDIR1|FIRDELAYLN|FIRLATTICE|FFTFILTER|AVERAGING],filter type enumerator)\
+    F_PROPS_IT(WINDOW,[WHANN|WHAMM|WFLAT|WBLCK|WRECT|WBRTL|WGAUS|WEXPO|WUSER],window type enumerator)\
+    F_PROPS_IT(AVR,[EXPO|LIN|AUTO|DCREMOVAL],avaraging type enumerator)
 
 #define _F_PROPS_IT_STR(T) #T
 #define F_PROPS_IT_STR(T) _F_PROPS_IT_STR(T)

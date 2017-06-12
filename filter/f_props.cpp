@@ -23,16 +23,44 @@ F_PROPS_ALL
 #undef F_PROPS_IT
     };
 
+    const char *units[] = {
+#define F_PROPS_IT(name,unit,info)\
+        #unit,
+F_PROPS_ALL
+#undef F_PROPS_IT
+    };
+
     int t, n;
+    const char *en_del = NULL;
+    const char *en_p = NULL;
 
-    while(s){
-
+    while(s)
+    {
         const char **o = list;
-        for(; *o; o++){
-
+        for(; *o; o++)
+        {
             n = strlen(*o);
             if(0 == memcmp(s, *o, n))
-                if(1 == sscanf(s+n+1, "%d", &t)){ //posun za '='
+            {
+                if((en_del = strchr((en_p = unit[o - list]), '|')))
+                {
+                    //jde o vycet - musime najit poradi shody == cislo enumu
+                    char en[32] = "";
+                    int en_n = (sscanf(s+n+1, "%32[^#]", &en) == 1) ? strlen(en) : 0;
+
+                    for(t = 0; en_n && en_p; t++)
+                    {
+                        if(0 != memcmp(en_p + 1, en, en_n)) //+1 move behind '[' or '|'
+                        {
+                            ret[*o] = t;
+                            break;
+                        }
+
+                        en_del = strchr((en_p = en_del) + 1, '|');
+                    }
+                }
+                else if(1 == sscanf(s+n+1, "%d", &t)) //posun za '='
+                {
 
                     ret[*o] = t;
                     break;

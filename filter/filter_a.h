@@ -41,13 +41,28 @@ template <class T> class a_filter {
 
         t_tf_props par;  //info parameters (B, fc, TA, ..) see f_props.h
 
+
+        /*! \brief - indeirect way mofify filter properties via property
+         */
+        virtual void tune(const t_tf_props &p){
+
+            (void)p; //do nothing, let
+        }
+
+        /*! \brief - indirect vai mofify filter properties via string of property
+         */
+        void tune(const char *config/* = "#B=500#fs=1000"*/){
+
+            t_tf_props par = f_str2tf(config);
+            tune(par);
+        }
     public:
 
         /*! \brief - defines behaviour of filter,
             n_2_proc == 0 defines valid output in decimation mode
             \todo - may be used to signal valid output after group delay, after filter run-up time/sample
         */
-        virtual T *proc(const T &feed, unsigned *count = NULL) = 0;
+        virtual const T *proc(const T &feed, unsigned *count = NULL) = 0;
 
         /*! \brief - backward identification */
         e_type type(){ return typef; }
@@ -70,7 +85,7 @@ template <class T> class a_filter {
             counter = 0;
         }
 
-        /*! \brief -
+        /*! \brief - direct common way of mofify filter properties
          */
         void tune(std::vector<T> &_num, std::vector<T> &_den){
 
