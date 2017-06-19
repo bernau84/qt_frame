@@ -10,6 +10,7 @@
 #include "rt_generator.h"
 #include "rt_wavinput.h"
 #include "rt_processor.h"
+#include "rt_control.h"
 
 INITIALIZE_EASYLOGGINGPP
 

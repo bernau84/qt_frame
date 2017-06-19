@@ -172,9 +172,7 @@ public:
 
     t_rt_filter(const QString &js_config, QObject *parent = NULL):
       a_rt_base(js_config, parent),
-      m_filter(_filter_factory(par["window"].get().toString(),
-                                par["window"].get().toString(),
-                                 par["properties"].get().toString()))
+      m_filter(_filter_factory(par["properties"].get().toString()))
     {
         fs = 0;
         ms_period = 50;

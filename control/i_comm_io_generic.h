@@ -56,7 +56,7 @@ public:
                 case ECOMM_PARSER_ERROR:
                 case ECOMM_PARSER_WAITING_SYNC:
                 case ECOMM_PARSER_WAITING_ENDOFORD:
-                    return ret;
+                    return (e_comm_parser_res)ret;
                 break;
                 case ECOMM_PARSER_MISMATCH:
                     //ale pokracujeme - vyhodime signal
@@ -71,14 +71,14 @@ public:
                 break;
             }
 
-        return sta;
+        return (e_comm_parser_res)ret;
     }
 
     void query(QByteArray &cmd, int timeout){
 
         on_write(cmd);
 
-        while((timeout > 0) && (refresh() == COMMSTA_INPROC)){
+        while((timeout > 0) && (refresh() <= ECOMM_PARSER_WAITING_ENDOFORD)){
             //blokujici
             QMutex localMutex;
             localMutex.lock();

@@ -17,7 +17,6 @@ protected:
     using a_filter<T>::par;
 
     e_filter_avr modef;
-    double TA;
 
 public:
     enum {
@@ -30,29 +29,28 @@ public:
 private:
     void average(const T &feed)
     {
-        prev = prev*num[1] + feed*num[0]; //analogie s fir N = 1 akorat adaptivni (LIN varianty)
-
-        if(modef == AUTO)
+        if(modef == DC_REMOVAL_NONLIN)
         {
-            if(TA >= num[0]){ //prechazime na exponencialni prumer
-
-                num[1] = (TA - 1) / TA;
-                num[0] = 1 / TA;
+            if(counter == 1)
+            {
+                prev = feed; //init
                 return;
             }
+            prev += (prev < feed) ? num[0] : -num[0];
+            return;
+        }
+
+        //update coef for next sample
+        if(((modef == AUTO) && (counter >= num[0])) //po odzaseni prumerovaci doby prechazime na exponencialni prumer
+                || (modef == EXPO)){
+
+            prev += (feed - prev) / num[0];
+            return;
         }
 
         if(modef == LIN)
         {
-            num[1] = (1.0 * counter) / (counter + 1);
-            num[0] = 1.0 / counter;
-            return;
-        }
-
-        if(DC_REMOVAL_NONLIN)
-        {
-            num[0] = 0;
-            num[1] = (feed > prev) ? (1 + 1/prev) : (1 - 1/prev);  //+1 nebo -1 v pristim kroku
+            prev += (feed - prev) / counter;
             return;
         }
     }
@@ -83,52 +81,28 @@ public:
         return NULL;  //pokud vypocet neprobihal (kvuli decimaci) vracime null
     }
 
-    void reset(const T def = T(0))
-    {
-        a_filter::reset(def);
-        if(modef == DC_REMOVAL_NONLIN)
-        {
-            num.clear();
-            num.push_back(1);  //num[0]
-            num.push_back(0);  //num[1]
-        }
-        if((modef == LIN) || (modef == AUTO))
-        {
-            num.clear();
-            num.push_back(-1);  //num[0]
-            num.push_back(1);  //num[1]
-        }
-    }
-
     /* modifikace prumerovaci doby - bezrozmerne
      * */
     void tune(double _TA){
 
-        TA = _TA;
-        if(modef == EXPO)
-        {
-            num.clear();
-            num.push_back(1 / TA);  //num[0]
-            num.push_back((TA - 1) / TA);  //num[1]
-        }
+        num[0] = _TA;
     }
 
     /* modifikace obecne
      * */
     void tune(const t_tf_props &p)
     {
-        TA = 1000; //1/8 pri 8000Hz
+        num[0] = 1000; //1/8 pri 8000Hz
         if((p.end() != p.find(s_wf_TA)) &&
             (p.end() != p.find(s_wf_fs)))
         {
             par = p;
-            TA = (p[s_wf_TA] / 1000000.0) * p[s_wf_fs];
+            num[0] = (p[s_wf_TA] / 1000000.0) * p[s_wf_fs];
         }
-        tune(TA);
     }
 
     t_filter_avr(e_filter_avr _mode, double _TA, int32_t _decimationf = 1) :
-        t_filter_fir<T>(NULL, NULL, 0, _decimationf),
+        t_filter_fir<T>({2.0}, NULL, 0, _decimationf),
         modef(_mode)
     {
         typef = a_filter<T>::AVERAGING;

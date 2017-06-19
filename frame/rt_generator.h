@@ -44,9 +44,9 @@ protected:
     int  fs;
     int  ms_period;
     double  ms_proc;
+    std::function<double(double)> f_sample;
 
 private:
-    std::function<double(double)> f_sample;
     QElapsedTimer elapsed;
     QVector<double> x;
     QVector<double>::Iterator xi;
@@ -131,4 +131,35 @@ public:
 };
 
 
+class t_rt_sweep_generator : public t_rt_generator {
+
+    Q_OBJECT
+
+protected:
+    using t_rt_generator::f_sample;
+
+private:
+    int f_0;
+    int f_1;
+    int T;
+
+    double a(double t)
+    {
+        t = fmod(t, T);
+        double fi = t*f_0 + t*t/2*(f_1 - f_0)/T; //faze pro lin preladeni
+        return 0.5 * cos(2*M_PI*fi);
+    }
+
+public:
+    t_rt_sweep_generator(const QString &js_config, QObject *parent = NULL):
+      t_rt_generator(js_config, a, parent)
+    {        
+        f_0 = par["f_0"].get().toInt();
+        f_1 = par["f_0"].get().toInt();
+        T = par["T"].get().toInt();
+        T = par["fs"].get().toInt();
+    }
+
+    virtual ~t_rt_sweep_generator(){}
+};
 #endif // RT_GENERATOR_H
