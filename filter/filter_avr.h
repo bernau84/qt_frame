@@ -4,7 +4,15 @@
 #include "filter_a.h"
 #include "f_windowing.h"
 
-template <class T> class t_filter_expo_avr : public a_filter<T> {
+template <class T> class t_filter_avr : public a_filter<T> {
+
+public:
+    enum e_filter_avr {
+        EXPO,
+        LIN,
+        AUTO,
+        DC_REMOVAL_NONLIN
+    };
 
 protected:
     using a_filter<T>::data;
@@ -17,14 +25,6 @@ protected:
     using a_filter<T>::par;
 
     e_filter_avr modef;
-
-public:
-    enum {
-        EXPO,
-        LIN,
-        AUTO,
-        DC_REMOVAL_NONLIN
-    }  e_filter_avr;
 
 private:
     void average(const T &feed)
@@ -63,7 +63,7 @@ public:
         if(decimationf < 0)
         {   //intepolace
             data.clear();
-            for(int i = 0; i > decimationf; i--)
+            for(unsigned i = 0; i > decimationf; i--)
             {  //uplne stupidne a asi neee dobre - vzdyt TA mam napocitanou na nejakou fs
                 //urcite ale funguje pro TA = 1 (interpolace skokem)
                 average(feed);
@@ -85,6 +85,7 @@ public:
      * */
     void tune(double _TA){
 
+        num = std::vector<T>(1);
         num[0] = _TA;
     }
 
@@ -97,17 +98,17 @@ public:
             (p.end() != p.find(s_wf_fs)))
         {
             par = p;
-            num[0] = (p[s_wf_TA] / 1000000.0) * p[s_wf_fs];
+            num[0] = (par[s_wf_TA] / 1000000.0) * par[s_wf_fs];
         }
     }
 
-    t_filter_avr(e_filter_avr _mode, double _TA, int32_t _decimationf = 1) :
-        t_filter_fir<T>({2.0}, NULL, 0, _decimationf),
+    t_filter_avr(e_filter_avr _mode, int _TA, int32_t _decimationf = 1) :
+        a_filter<T>(NULL, NULL, 0, _decimationf),
         modef(_mode)
     {
         typef = a_filter<T>::AVERAGING;
         tune(_TA); //ma vyznam jen pro expo, nebo auto
-        reset();  //inicializuje lin, nonlin, a auto
+        a_filter<T>::reset();  //inicializuje lin, nonlin, a auto
     }
 
 

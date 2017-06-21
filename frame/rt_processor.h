@@ -51,27 +51,35 @@ private:
     QVector<double>::Iterator xi;
     t_rt_filter_ex *m_data;
 
-    a_filter<double> *_filter_factory(const QString &props)
+    a_filter<double> *_filter_factory(const QString &s_props)
     {
-        t_tf_props props = f_str2tf(props.toLatin1().constData());
+        t_tf_props props = f_str2tf(s_props.toLatin1().constData());
 
-        a_filter::e_type ftype = a_filter::FIR_DIRECT1;
+        a_filter<double>::e_type ftype = a_filter<double>::FIR_DIRECT1;
         e_win fwin = WHANN;
         int ford = 64;
         int fdecim = 1;
+        t_filter_avr<double>::e_filter_avr fmode;
+        int fTA;
 
-        if(props.find(s_wf_FILTER) != props.end()) ftype = props[s_wf_FILTER];
-        if(props.find(s_wf_WINDOW) != props.end()) fwin = props[s_wf_WINDOW];
+        if(props.find(s_wf_RES) != props.end()) fdecim = props[s_wf_RES];
+        if(props.find(s_wf_FILTER) != props.end()) ftype = (a_filter<double>::e_type)props[s_wf_FILTER];
+        if(props.find(s_wf_WINDOW) != props.end()) fwin = (e_win)props[s_wf_WINDOW];
+        if(props.find(s_wf_AVR) != props.end()) fmode = (t_filter_avr<double>::e_filter_avr)props[s_wf_AVR];
+        if(props.find(s_wf_TA) != props.end()) fTA = props[s_wf_TA];
 
         switch(ftype)
         {
-            case a_filter::FIR_DIRECT1:
-                return new t_filter_wfir(fwin, ford, props, fdecim);
+            case a_filter<double>::FIR_DIRECT1:
+                return new t_filter_wfir<double>(ford, fwin, props, fdecim);
             break;
-            case a_filter::AVERAGING:
-                /*! \todo */
+            case a_filter<double>::AVERAGING:
+                return new t_filter_avr<double>(fmode, fTA, fdecim);
             break;
+            default: break;
         }
+
+        return NULL;
     }
 
     /*! init privates from configuration */
@@ -107,7 +115,7 @@ private:
         for(int i=0; i<p->n(); i++){
 
             unsigned ntotal = 0;
-            double *out = m_filter->proc(*a++, &ntotal);
+            const double *out = m_filter->proc(*a++, &ntotal);
             if(out){  // != 0 refresh
 
                 if(m_data == NULL)
@@ -176,7 +184,7 @@ public:
     {
         fs = 0;
         ms_period = 50;
-        fc = m_filter[s_wf_f_ce]; //neni vyplneno, bude tam 0 jao by slo o low pass
+        fc =(*m_filter)[s_wf_f_ce]; //neni vyplneno, bude tam 0 jao by slo o low pass
         m_data = NULL;
     }
 

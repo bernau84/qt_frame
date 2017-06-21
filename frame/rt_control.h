@@ -16,15 +16,15 @@
 
 struct t_frame_cnode
 {
-    std::string  fname;
+    QString     fname;
     a_rt_base   *node;
 };
 
 struct t_frame_cmd_decomp
 {
-    int        no;
-    int        ord;
-    QString    par;
+    int     no;
+    int     ord;
+    QString par;
 };
 
 struct t_frame_map_it;
@@ -39,11 +39,11 @@ class t_rt_control : public QObject
 
 private:
 
-    std::string                 cpath;  //aktualni node:povel:parametr...
-    std::vector<const char *>   corder; //seznam podporovanych povelu
-    std::vector<t_frame_cnode>  cnode;  //seznam znamych nodu
+    QString                 cpath;  //aktualni node:povel:parametr...
+    QVector<const char *>   corder; //seznam podporovanych povelu
+    QVector<t_frame_cnode>  cnode;  //seznam znamych nodu
     t_frame_map_it  ctopo;  //topologie nodu
-    i_comm_generic  &ccomm;  //komunikator
+    i_comm_generic  *ccomm;  //komunikator
 
     int m_delay;
     QStringList m_script;
@@ -64,12 +64,15 @@ private:
 
         if(!ok)  //node neni definovany cislem
         {   //zkusime to jeste pres fname
-            to = -1; //jako nepplatny
+            to = -1; //jako neplatny
             auto it = std::find_if(cnode.begin(),
                                    cnode.end(),
-                                   [&](auto const &v) -> { return cmd.par.toStdString() == v.fname; } );
+                                   [&](t_frame_cnode v) -> bool {
+                                        return ref == v.fname;
+                                   } );
 
-            if(it != cnode.end()) to = std::distance(cnode.begin(), it);
+            if(it != cnode.end())
+                to = std::distance(cnode.begin(), it);
         }
 
         return (to < corder.size()) ? to : -1;
@@ -90,8 +93,8 @@ private:
         QMetaObject::invokeMethod(cnode[cmd.no].node,
                                   SLOT(on_change(const QString &, QVariant &)),
                                   Qt::AutoConnection,
-                                  property_name,
-                                  property_value);
+                                  Q_ARG(QString, property_name),
+                                  Q_ARG(QString, property_value));
 
         _reply_ok();
         return true;
@@ -113,7 +116,7 @@ private:
             help += "rec(filename) - record as signal sing\r\n";
             help += "dsp(type) - audio processor\r\n";
             help += "filter(props) - audio filter\r\n";
-            ccomm.query(help, 0);
+            ccomm->query(help.toLocal8Bit(), 0);
             return true;
         }
 
@@ -156,7 +159,7 @@ private:
         cnode.push_back(v);
     }
 
-    void _connect(const t_frame_cmd_decomp &cmd)
+    bool _connect(const t_frame_cmd_decomp &cmd)
     {
         if(cmd.par[0] == '?')
         {
@@ -167,7 +170,7 @@ private:
         else
         {
             int to = _identify(cmd.par);
-            if((to >= 0) && (to < cnode.size()))
+            if((to >= 0) && (to < (int)cnode.size()))
             {
                 cnode[cmd.no].node->connect(cnode[to].node); //connect(zdroj)
                 _update_topo(to, cmd.no); //zdroj, pijavice - aktualizace topologie
@@ -183,13 +186,16 @@ private:
     void _update_topo(int src, int leach)
     {
        /*! \todo */
+        Q_UNUSED(src);
+        Q_UNUSED(leach);
     }
 
     void _printout_topo(int src)
     {
         for(const t_frame_cnode &i : cnode)
         {
-            ccomm.query(i.fname + "\r\n", 0);
+            QString s = i.fname + "\r\n";
+            ccomm->query(s.toLocal8Bit(), 0);
         }
     }
 
@@ -203,29 +209,33 @@ private:
         help += "create:?|mic|filter|recorder|playback...\r\n\tcreate unconnected specific node, query for extended help\r\n";
         help += "connect:?|name|no\r\n\tquery topology behind node or connet another node with given name or no\r\n";
         help += "wait:duration\r\n\tstop the script evauation\r\n";
-        ccomm.query(help, 0);
+        ccomm->query(help.toLocal8Bit(), 0);
     }
 
     void _reply_ok(const char *detail = NULL)
     {
-        std::string reply = cpath + ">OK";
+        QString reply = cpath + ">OK";
         if(detail)
         {
-            reply += "(" + *detail + ")";
+            reply += "(";
+            reply += *detail;
+            reply += ")";
         }
         reply += "\r\n";
-        ccomm.query(reply, 0);  //guery bez cekani na odpoved je reply
+        ccomm->query(reply.toLocal8Bit(), 0);  //guery bez cekani na odpoved je reply
     }
 
     void _reply_error(const char *detail = NULL)
     {
-        std::string reply = cpath + ">ERROR";
+        QString reply = cpath + ">ERROR";
         if(detail)
         {
-            reply += "(" + *detail + ")";
+            reply += "(";
+            reply += + *detail;
+            reply += + ")";
         }
         reply += "\r\n";
-        ccomm.query(reply, 0);  //guery bez cekani na odpoved je reply
+        ccomm->query(reply.toLocal8Bit(), 0);  //guery bez cekani na odpoved je reply
     }
 
 
@@ -234,7 +244,8 @@ private slots:
     //spracovani jednoho radku skriptu
     void on_procline()
     {
-        on_newline(-1, m_script.first());
+        QString s = m_script.first();
+        on_newline(-1, s.toLocal8Bit());
         if(m_script.size() > 0){
 
             m_script.removeFirst();
@@ -252,6 +263,8 @@ private slots:
     //sem pristane signal od io
     void on_newline(int ord, const QByteArray &line){
 
+        ord = ord;
+
         //cmd-control process
         std::string loc = line.toStdString();
         t_frame_cmd_decomp cmd;
@@ -260,33 +273,33 @@ private slots:
         while(!loc.empty()){  //rozpadnout na '&' sekce
 
             std::string chunk;
-            int pos = loc.find('&');
+            unsigned pos = loc.find('&');
             if(pos != std::string::npos) chunk = loc.substr(pos+1);
 
             if(loc.front() != ':')
             {  //nejde o absolutni cestu, pridavame directory
-               loc.insert(0, cpath);
+               loc.insert(0, cpath.toStdString());
             }
             else
             {   //test loc
-                  if(!_validity(loc, &cmd))
+                if(!_validity(loc, &cmd))
                 {
-                    if(!de.node) _reply_error("adress");
-                    else if(de.ord < 0) _reply_error("order");
+                    if(cmd.no < 0) _reply_error("adress");
+                    else if(cmd.ord < 0) _reply_error("order");
                     else _reply_error("syntax");
                     return;
                 }
                 //update path
                 if(loc.back() == ':')
                 {   //aktualizace aktivni cesty
-                    cpath = loc;
+                    cpath = QString::fromStdString(loc);
                     _reply_ok();
                     return;
                 }
             }
 
             //eval command
-            if(0 == strcmp(corder[cmd.ord], "start"))
+            if(cmd.ord == corder.indexOf("start"))
             {
                 //cmd.node->on_start(); - volame na primo
                 //volame pres "signal" - lepsi ze bude bezpecne i pro vicevlakonove systemy
@@ -294,30 +307,30 @@ private slots:
                 //pokud ma stav omezene trvani zapnem casovac a toglujeme
                 if((dl = cmd.par.toInt())) QTimer::singleShot(dl, cnode[cmd.no].node, SLOT(on_stop(int)));
             }
-            else if(0 == strcmp(corder[cmd.ord], "stop"))
+            else if(cmd.ord == corder.indexOf("stop"))
             {
                 QMetaObject::invokeMethod(cnode[cmd.no].node, SLOT(on_stop(int)), Qt::AutoConnection);
                 //pokud ma stav omezene trvani zapnem casovac a toglujeme
                 if((dl = cmd.par.toInt())) QTimer::singleShot(dl, cnode[cmd.no].node, SLOT(on_start(int)));
             }
-            else if(0 == strcmp(corder[cmd.ord], "wait"))
+            else if(cmd.ord == corder.indexOf("wait"))
             {
                 //pauza ve vykonu scriptu
                 if((m_delay = cmd.par.toInt())){;}
             }
-            else if(0 == strcmp(corder[cmd.ord], "create"))
+            else if(cmd.ord == corder.indexOf("create"))
             {
                 _create(cmd);
             }
-            else if(0 == strcmp(corder[cmd.ord], "connect"))
+            else if(cmd.ord == corder.indexOf("connect"))
             {
                 _connect(cmd);
             }
-            else if(0 == strcmp(corder[cmd.ord], "cfg"))
+            else if(cmd.ord == corder.indexOf("cfg"))
             {
                 _config(cmd);
             }
-            else if(0 == strcmp(corder[cmd.ord], "help"))
+            else if(cmd.ord == corder.indexOf("help"))
             {
                 _help();
             }
@@ -327,14 +340,14 @@ private slots:
     }
 
 public:
-    t_rt_control(i_comm_parser &parser, QObject *parent = NULL):
+    t_rt_control(i_comm_generic *parser, QObject *parent = NULL):
         QObject(parent),
         corder({"start", "stop", "wait", "create", "cfg", "connect"}),
         ccomm(parser)
     {
         m_delay = 0;
-        QObject::connect(&ccomm, SIGNAL(order(int,const QByteArray &),
-                         this, SLOT(on_newline(int,const QByteArray &));
+        QObject::connect(ccomm, SIGNAL(order(int,const QByteArray &)),
+                         this, SLOT(on_newline(int,const QByteArray &)));
     }
 };
 

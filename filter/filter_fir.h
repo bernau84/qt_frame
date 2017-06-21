@@ -1,3 +1,6 @@
+#ifndef FILTER_FIR_H
+#define FILTER_FIR_H
+
 #include "filter_a.h"
 #include "f_windowing.h"
 
@@ -49,6 +52,7 @@ public:
      * */
     virtual void tune(t_tf_props &p)
     {
+        t_tf_props::iterator it;
         if(p.end() != (it = p.find(s_wf_fs)))
             fshift((double)it->second, num);
     }
@@ -91,8 +95,6 @@ private:
 
 public:
     using t_filter_fir<T>::fshift;
-
-
 
     /* vygeneruje inpulsni odezvu idelaniho low pass fir filtru delky N a mezni frekvence fm
      * pomoci okenkovani fce sinc jakozto idelani LP odezvy
@@ -171,8 +173,10 @@ public:
                     m_win(w),
                     m_N(N)
     {
-        tune(config);
+        a_filter<T>::tune(config);
     }
 
     virtual ~t_filter_wfir(){;}
 };
+
+#endif // FILTER_FIR_H

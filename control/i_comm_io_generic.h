@@ -34,11 +34,10 @@ signals:
 
 public:
     virtual void on_read(QByteArray &dt) = 0;
-    virtual void on_write(QByteArray &dt) = 0;
+    virtual void on_write(const QByteArray &dt) = 0;
 
     virtual void callback(int ord, const QByteArray &par){
 
-        ord = ord;  par = par;
         qDebug() << "ord" << ord << "par" << par;
     }
 
@@ -74,7 +73,7 @@ public:
         return (e_comm_parser_res)ret;
     }
 
-    void query(QByteArray &cmd, int timeout){
+    void query(const QByteArray &cmd, int timeout){
 
         on_write(cmd);
 

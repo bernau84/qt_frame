@@ -157,7 +157,7 @@ public:
         f_0 = par["f_0"].get().toInt();
         f_1 = par["f_0"].get().toInt();
         T = par["T"].get().toInt();
-        T = par["fs"].get().toInt();
+        fs = par["fs"].get().toInt();
     }
 
     virtual ~t_rt_sweep_generator(){}
