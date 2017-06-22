@@ -48,17 +48,31 @@ private:
     int m_delay;
     QStringList m_script;
 
-    bool _validity(const std::string &line, t_frame_cmd_decomp *cmd){
+    bool _validity(const QString &line, t_frame_cmd_decomp &cmd){
 
-        /*! \todo */
-        //rozparserovat podle dvoutecek
-        //adresa musi byt ze znameho jmena nebo do registrovaneho cisla
-        //povel musi byt znam pokud je vyplnen
-        //dalsi uz nezkoumame
-        return false;
+        QStringList atoms = line.split(":");
+        if((cmd.no = _identify_no(atoms[0])) < 0) return false;
+        if((cmd.ord = _identify_cmd(atoms[0])) < 0) return false;
+        cmd.par = atoms[2];
+        return true;
     }
 
-    int _identify(const QString &ref)
+    int _identify_cmd(const QString &ref)
+    {
+        int to = -1; //jako neplatny
+        auto it = std::find_if(corder.begin(),
+                               corder.end(),
+                               [&](const char *s) -> bool {
+                                    return ref.compare(s);
+                               } );
+
+        if(it != corder.end())
+            to = std::distance(corder.begin(), it);
+
+        return (to < corder.size()) ? to : -1;
+    }
+
+    int _identify_no(const QString &ref)
     {
         bool ok;
         int to = ref.toInt(&ok);
@@ -69,14 +83,14 @@ private:
             auto it = std::find_if(cnode.begin(),
                                    cnode.end(),
                                    [&](t_frame_cnode v) -> bool {
-                                        return ref == v.fname;
+                                        return ref.compare(v.fname);
                                    } );
 
             if(it != cnode.end())
                 to = std::distance(cnode.begin(), it);
         }
 
-        return (to < corder.size()) ? to : -1;
+        return (to < cnode.size()) ? to : -1;
     }
 
     bool _config(const t_frame_cmd_decomp &cmd)
@@ -157,7 +171,14 @@ private:
             path = (!cmd.par.isEmpty()) ? QString("{\"path\":{\"__def\":\"%1\"}}").arg(cmd.par) : "";
             v.node =  new t_rt_recorder(path);
         }
-        cnode.push_back(v);
+
+        if(v.node)
+        {
+            cnode.push_back(v);
+            return true;
+        }
+
+        return false;
     }
 
     bool _connect(const t_frame_cmd_decomp &cmd)
@@ -170,7 +191,7 @@ private:
         }
         else
         {
-            int to = _identify(cmd.par);
+            int to = _identify_no(cmd.par);
             if((to >= 0) && (to < (int)cnode.size()))
             {
                 cnode[cmd.no].node->connect(cnode[to].node); //connect(zdroj)
@@ -193,6 +214,7 @@ private:
 
     void _printout_topo(int src)
     {
+        Q_UNUSED(src);
         for(const t_frame_cnode &i : cnode)
         {
             QString s = i.fname + "\r\n";
@@ -267,23 +289,20 @@ private slots:
         ord = ord;
 
         //cmd-control process
-        std::string loc = line.toStdString();
+        QString loc = QString::fromLocal8Bit(line.data(), line.size());
         t_frame_cmd_decomp cmd;
         int dl;
+        QStringList list = loc.split("&");  //rozpadnout na '&' sekce
 
-        while(!loc.empty()){  //rozpadnout na '&' sekce
+        foreach(QString i, list){
 
-            std::string chunk;
-            unsigned pos = loc.find('&');
-            if(pos != std::string::npos) chunk = loc.substr(pos+1);
-
-            if(loc.front() != ':')
+            if(i[0] != ':')
             {  //nejde o absolutni cestu, pridavame directory
-               loc.insert(0, cpath.toStdString());
+               i.insert(0, cpath);
             }
             else
             {   //test loc
-                if(!_validity(loc, &cmd))
+                if(!_validity(i, cmd))
                 {
                     if(cmd.no < 0) _reply_error("adress");
                     else if(cmd.ord < 0) _reply_error("order");
@@ -291,9 +310,9 @@ private slots:
                     return;
                 }
                 //update path
-                if(loc.back() == ':')
+                if(i.endsWith(':'))
                 {   //aktualizace aktivni cesty
-                    cpath = QString::fromStdString(loc);
+                    cpath = i;
                     _reply_ok();
                     return;
                 }
@@ -335,8 +354,6 @@ private slots:
             {
                 _help();
             }
-
-            loc = chunk; //pokracujeme jen pokud bude chunk nenulovy
         }
     }
 
