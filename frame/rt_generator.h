@@ -130,13 +130,12 @@ public:
     virtual ~t_rt_generator(){}
 };
 
-
 class t_rt_sweep_generator : public t_rt_generator {
 
     Q_OBJECT
 
 protected:
-    using t_rt_generator::f_sample;
+    using t_rt_generator::fs;
 
 private:
     int f_0;
@@ -152,7 +151,7 @@ private:
 
 public:
     t_rt_sweep_generator(const QString &js_config, QObject *parent = NULL):
-      t_rt_generator(js_config, a, parent)
+      t_rt_generator(js_config, std::bind(&t_rt_sweep_generator::a, this, std::placeholders::_1), parent)
     {        
         f_0 = par["f_0"].get().toInt();
         f_1 = par["f_0"].get().toInt();

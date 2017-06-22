@@ -28,7 +28,6 @@ private slots:
     void accept(void){
 
         tcp = ser.nextPendingConnection();
-        sta = COMMSTA_PREPARED;
         qDebug() << "Connected!";
     }
 
@@ -102,12 +101,10 @@ public:
         tcp->connectToHost(host, port);
         if(tcp->waitForConnected(50000/*VI_COMM_TCPCLI_CONN_TMO*/)){
 
-            sta = COMMSTA_PREPARED;
             qDebug() << "Connected!";
         } else {
 
             tcp = NULL;
-            sta = COMMSTA_ERROR;
             qDebug() << "Connect timeout!";
         }
     }

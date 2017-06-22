@@ -27,7 +27,7 @@ public:
         std::lock_guard<std::mutex> tl(mu);  //odemkne po ukonceni platnosti promenne, RAII principy
         if(!readed.empty())
         {
-            dt.append(readed);
+            dt.append(QString::fromStdString(readed));
             readed.clear();
         }
     }
@@ -38,14 +38,14 @@ public:
     }
 
     t_comm_stdte (i_comm_parser *parser):
-        i_comm_generic(&parser),
+        i_comm_generic(parser),
         running(true),
         reader([&]()
             {
                 while(running && std::cin)
                 {
                     std::string s;
-                    s << std::cin;
+                    std::cin >> s;
 
                     std::unique_lock<std::mutex> tl(mu);
                     readed.append(s);

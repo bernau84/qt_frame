@@ -55,6 +55,7 @@ private:
         //adresa musi byt ze znameho jmena nebo do registrovaneho cisla
         //povel musi byt znam pokud je vyplnen
         //dalsi uz nezkoumame
+        return false;
     }
 
     int _identify(const QString &ref)

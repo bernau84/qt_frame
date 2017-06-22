@@ -17,7 +17,7 @@ protected:
     using a_filter<T>::par;
 
 public:
-    virtual T *proc(const T &feed, unsigned *count = NULL){
+    virtual const T *proc(const T &feed, unsigned *count = NULL){
 
         int N = (num.size() < data.size()) ? num.size() : data.size();  //teor. muze byt delka ruzna
 
@@ -165,6 +165,7 @@ public:
                     m_win(w),
                     m_N(N)
     {
+        par = _par;
         tune(par);
     }
 

@@ -50,6 +50,8 @@ private:
                 LOG(INFO) << m_buffer.size() << "samples playback";
             }
         }
+
+        return p->n();
     }
 
 public:

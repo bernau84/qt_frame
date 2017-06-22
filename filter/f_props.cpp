@@ -42,11 +42,11 @@ F_PROPS_ALL
             n = strlen(*o);
             if(0 == memcmp(s, *o, n))
             {
-                if((en_del = strchr((en_p = unit[o - list]), '|')))
+                if((en_del = strchr((en_p = units[o - list]), '|')))
                 {
                     //jde o vycet - musime najit poradi shody == cislo enumu
                     char en[32] = "";
-                    int en_n = (sscanf(s+n+1, "%32[^#]", &en) == 1) ? strlen(en) : 0;
+                    int en_n = (sscanf(s+n+1, "%32[^#]", en) == 1) ? strlen(en) : 0;
 
                     for(t = 0; en_n && en_p; t++)
                     {
@@ -65,6 +65,7 @@ F_PROPS_ALL
                     ret[*o] = t;
                     break;
                 }
+            }
         }
 
         s = strchr(s+1, '#');
