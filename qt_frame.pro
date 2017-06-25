@@ -9,7 +9,7 @@ DEFINES += ELPP_QT_LOGGING    \
 CONFIG += c++11
 
 TARGET = qt_frame
-#CONFIG += console
+CONFIG += console
 CONFIG -= app_bundle
 
 TEMPLATE = app

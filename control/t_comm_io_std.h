@@ -32,7 +32,7 @@ public:
         }
     }
 
-    virtual void on_write(QByteArray &dt){
+    virtual void on_write(const QByteArray &dt){
 
         std::cout << dt.toStdString();
     }
@@ -42,15 +42,18 @@ public:
         running(true),
         reader([&]()
             {
-                while(running && std::cin)
+                while(running/* && std::cin*/)
                 {
                     std::string s;
                     std::cin >> s;
 
                     std::unique_lock<std::mutex> tl(mu);
                     readed.append(s);
+                    readed.append("\n");
                     mu.unlock();
                 }
+
+                std::cout << "reader finished!";
             })
     {
 

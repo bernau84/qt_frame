@@ -50,10 +50,12 @@ private:
 
     bool _validity(const QString &line, t_frame_cmd_decomp &cmd){
 
-        QStringList atoms = line.split(":");
-        if((cmd.no = _identify_no(atoms[0])) < 0) return false;
-        if((cmd.ord = _identify_cmd(atoms[0])) < 0) return false;
-        cmd.par = atoms[2];
+        QStringList atoms = line.split(':');
+        if(atoms.size() < 3) return false;
+        if(atoms[0] != "") return false;
+        if((cmd.no = _identify_no(atoms[1])) < 0);// return false;
+        if((cmd.ord = _identify_cmd(atoms[2])) < 0) return false;
+        if(atoms.size() > 3) cmd.par = atoms[3];
         return true;
     }
 
@@ -63,7 +65,7 @@ private:
         auto it = std::find_if(corder.begin(),
                                corder.end(),
                                [&](const char *s) -> bool {
-                                    return ref.compare(s);
+                                    return 0 == ref.compare(s);
                                } );
 
         if(it != corder.end())
@@ -300,22 +302,21 @@ private slots:
             {  //nejde o absolutni cestu, pridavame directory
                i.insert(0, cpath);
             }
-            else
-            {   //test loc
-                if(!_validity(i, cmd))
-                {
-                    if(cmd.no < 0) _reply_error("adress");
-                    else if(cmd.ord < 0) _reply_error("order");
-                    else _reply_error("syntax");
-                    return;
-                }
-                //update path
-                if(i.endsWith(':'))
-                {   //aktualizace aktivni cesty
-                    cpath = i;
-                    _reply_ok();
-                    return;
-                }
+
+            //test loc
+            if(!_validity(i, cmd))
+            {
+                if(cmd.no < -1) _reply_error("adress");  //-1 broadcast
+                else if(cmd.ord < 0) _reply_error("order");
+                else _reply_error("syntax");
+                return;
+            }
+            //update path
+            if(i.endsWith(':'))
+            {   //aktualizace aktivni cesty
+                cpath = i;
+                _reply_ok();
+                return;
             }
 
             //eval command
@@ -360,7 +361,8 @@ private slots:
 public:
     t_rt_control(i_comm_generic *parser, QObject *parent = NULL):
         QObject(parent),
-        corder({"start", "stop", "wait", "create", "cfg", "connect"}),
+        cpath("::"),
+        corder({"start", "stop", "wait", "create", "cfg", "connect", "help"}),
         ccomm(parser)
     {
         m_delay = 0;

@@ -22,6 +22,7 @@ private:
     std::vector<const char *> orders;
 
 public:
+
     virtual e_comm_parser_res feed(uint8_t p){
 
         if((p == '\r') || (p == '\n')){
@@ -50,7 +51,7 @@ public:
         return orders.size();
     }
 
-    t_comm_parser_string(const char *_orders[]) :
+    t_comm_parser_string(const char *_orders[] = NULL) :
         i_comm_parser()
     {
         if(_orders)

@@ -21,6 +21,7 @@ class i_comm_generic : public QObject {
 
 protected:
     i_comm_parser *parser;
+    bool m_local_echo;
 
 private slots:
     void timerEvent(QTimerEvent *event){
@@ -33,6 +34,12 @@ signals:
     void order(int ord, const QByteArray &par);
 
 public:
+
+    void local_echo(bool on)
+    {
+        m_local_echo = on;
+    }
+
     virtual void on_read(QByteArray &dt) = 0;
     virtual void on_write(const QByteArray &dt) = 0;
 
@@ -48,14 +55,16 @@ public:
         if(dt.isEmpty())
             return ECOMM_PARSER_WAITING_SYNC;
 
+        if(m_local_echo) on_write(dt);
+
         int ret = 0;
         for(int i=0; i<dt.length(); i++)
             switch((ret = parser->feed(dt[i]))){
 
                 case ECOMM_PARSER_ERROR:
-                case ECOMM_PARSER_WAITING_SYNC:
-                case ECOMM_PARSER_WAITING_ENDOFORD:
                     return (e_comm_parser_res)ret;
+                case ECOMM_PARSER_WAITING_SYNC:
+                case ECOMM_PARSER_WAITING_ENDOFORD:   
                 break;
                 case ECOMM_PARSER_MISMATCH:
                     //ale pokracujeme - vyhodime signal
