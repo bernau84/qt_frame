@@ -45,7 +45,7 @@ public:
 
     virtual void callback(int ord, const QByteArray &par){
 
-        qDebug() << "ord" << ord << "par" << par;
+        //qDebug() << "ord" << ord << "par" << par;
     }
 
     e_comm_parser_res refresh(){

@@ -53,7 +53,7 @@ private:
         QStringList atoms = line.split(':');
         if(atoms.size() < 3) return false;
         if(atoms[0] != "") return false;
-        if((cmd.no = _identify_no(atoms[1])) < 0);// return false;
+        if((cmd.no = _identify_no(atoms[1])) < 0);// return false; - nevadi kdyz jde o broadcast
         if((cmd.ord = _identify_cmd(atoms[2])) < 0) return false;
         if(atoms.size() > 3) cmd.par = atoms[3];
         return true;
@@ -227,13 +227,13 @@ private:
     void _help()
     {
         QString help;
-        help += "help\r\n\tdisplay this\r\n";
-        help += "cfg:A=B\r\n\tconfigure one parameter of node\r\n";
-        help += "start:duration\r\n\tkeep running node for duration[ms] or start it forewer";
-        help += "stop:duration\r\n\tpause node for duration[ms] or stop forewer";
-        help += "create:?|mic|filter|recorder|playback...\r\n\tcreate unconnected specific node, query for extended help\r\n";
-        help += "connect:?|name|no\r\n\tquery topology behind node or connet another node with given name or no\r\n";
-        help += "wait:duration\r\n\tstop the script evauation\r\n";
+        help += "display this help\r\n";
+        help += "cfg:A=B\t\tconfigure one parameter of node\r\n";
+        help += "start:duration\t\tkeep running node for duration[ms] or start it forewer\r\n";
+        help += "stop:duration\t\tpause node for duration[ms] or stop forewer\r\n";
+        help += "create:?|mic|filter|recorder|playback...\t\tcreate unconnected specific node, query for extended help\r\n";
+        help += "connect:?|name|no\t\tquery topology behind node or connet another node with given name or no\r\n";
+        help += "wait:duration\t\tstop the script evauation\r\n";
         ccomm->query(help.toLocal8Bit(), 0);
     }
 
@@ -256,8 +256,8 @@ private:
         if(detail)
         {
             reply += "(";
-            reply += + *detail;
-            reply += + ")";
+            reply += detail;
+            reply += ")";
         }
         reply += "\r\n";
         ccomm->query(reply.toLocal8Bit(), 0);  //guery bez cekani na odpoved je reply
@@ -320,7 +320,7 @@ private slots:
             }
 
             //eval command
-            if(cmd.ord == corder.indexOf("start"))
+            if(0 == strcmp(corder[cmd.ord], "start"))
             {
                 //cmd.node->on_start(); - volame na primo
                 //volame pres "signal" - lepsi ze bude bezpecne i pro vicevlakonove systemy
@@ -328,30 +328,30 @@ private slots:
                 //pokud ma stav omezene trvani zapnem casovac a toglujeme
                 if((dl = cmd.par.toInt())) QTimer::singleShot(dl, cnode[cmd.no].node, SLOT(on_stop(int)));
             }
-            else if(cmd.ord == corder.indexOf("stop"))
+            else if(0 == strcmp(corder[cmd.ord], "stop"))
             {
                 QMetaObject::invokeMethod(cnode[cmd.no].node, SLOT(on_stop(int)), Qt::AutoConnection);
                 //pokud ma stav omezene trvani zapnem casovac a toglujeme
                 if((dl = cmd.par.toInt())) QTimer::singleShot(dl, cnode[cmd.no].node, SLOT(on_start(int)));
             }
-            else if(cmd.ord == corder.indexOf("wait"))
+            else if(0 == strcmp(corder[cmd.ord], "wait"))
             {
                 //pauza ve vykonu scriptu
                 if((m_delay = cmd.par.toInt())){;}
             }
-            else if(cmd.ord == corder.indexOf("create"))
+            else if(0 == strcmp(corder[cmd.ord], "create"))
             {
                 _create(cmd);
             }
-            else if(cmd.ord == corder.indexOf("connect"))
+            else if(0 == strcmp(corder[cmd.ord], "connect"))
             {
                 _connect(cmd);
             }
-            else if(cmd.ord == corder.indexOf("cfg"))
+            else if(0 == strcmp(corder[cmd.ord], "cfg"))
             {
                 _config(cmd);
             }
-            else if(cmd.ord == corder.indexOf("help"))
+            else if(0 == strcmp(corder[cmd.ord], "help"))
             {
                 _help();
             }
