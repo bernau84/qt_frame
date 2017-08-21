@@ -21,10 +21,6 @@ int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
-    t_comm_parser_string nl_parser(NULL);  //hlida jen nove radky
-    t_comm_stdte io_std(dynamic_cast<i_comm_parser *>(&nl_parser)); //cte a zapisuje do std terminalu
-    t_rt_control ctrl_std(&io_std); //rizeni behu a nastaveni
-
 //    t_f_win<double> wi_gauss(WGAUS, 13, "#B=500#fs=1000#TA=100");
 //    LOG(INFO) << wi_gauss[0];
 //    LOG(INFO) << wi_gauss[8];
@@ -49,6 +45,28 @@ int main(int argc, char *argv[])
 //    for(int i=0; i<16; i++)
 //        LOG(INFO) << i << " " << *(wfir.proc(1));
 
+    t_comm_parser_string nl_parser(NULL);  //hlida jen nove radky
+    t_comm_stdte io_std(dynamic_cast<i_comm_parser *>(&nl_parser)); //cte a zapisuje do std terminalu
+    t_rt_control ctrl_std(&io_std); //rizeni behu a nastaveni
+
+    ctrl_std.do_script(
+                "::create=mic\r\n"              //root node
+                ":mic1:create=filter\r\n"       //absolute path
+                "filter2" //move
+                "create=playback\r\n"           //relative path
+                "create=rec\r\n"                //realtive path
+                ":mic1:start=10000\r\n"
+                "::pause=10000\r\n"
+                ":filter2:cfg=#fc=500\r\n"
+                ":mic1:start=10000\r\n"
+                "::pause=10000\r\n"
+                ":filter2:cfg=#fc=1000\r\n"
+                ":mic1:start=10000\r\n"
+                "::pause=10000\r\n"
+                ":filter2:cfg=#fc=1500\r\n"
+                ":mic1:start=10000\r\n"
+                );
+
 //    t_rt_audioinput aud_src("");
 //    t_rt_generator sig_src("", [](double t) -> double { return 0.8*sin(2*M_PI*2000*t); });
 //    t_rt_wavinput wav_src("");
@@ -71,6 +89,8 @@ int main(int argc, char *argv[])
 //    src_rec.on_start(0);
 //    fir_pro.on_start(0);
 //    pro_rec.on_start(0);
+
+
 
 
     /*

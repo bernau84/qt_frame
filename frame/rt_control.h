@@ -61,17 +61,17 @@ private:
 
     int _identify_cmd(const QString &ref)
     {
-        int to = -1; //jako neplatny
         auto it = std::find_if(corder.begin(),
                                corder.end(),
-                               [&](const char *s) -> bool {
-                                    return 0 == ref.compare(s);
+                               [ref](const char *s) -> bool {
+                                    std::cout << s;
+                                    return false; //ref.startsWith(s);
                                } );
 
-        if(it != corder.end())
-            to = std::distance(corder.begin(), it);
+        if(it == corder.end())
+            return -1;
 
-        return (to < corder.size()) ? to : -1;
+        return std::distance(corder.begin(), it);
     }
 
     int _identify_no(const QString &ref)
@@ -274,16 +274,13 @@ private slots:
         if(m_script.size() > 0){
 
             m_script.removeFirst();
-            QTimer::singleShot(m_delay, this, SLOT(on_procline));
+
+            //a dalsi
+            if(m_delay) QTimer::singleShot(m_delay, this, SLOT(on_procline));
+            else on_procline();
         }
     }
 
-    //povely od jinud nez od io
-    void do_script(const QString &script)
-    {
-        m_script = script.split('\n');
-        on_procline();
-    }
 
     //sem pristane signal od io
     void on_newline(int ord, const QByteArray &line){
@@ -357,6 +354,15 @@ private slots:
             }
         }
     }
+
+public slots:
+    //povely od jinud nez od io
+    void do_script(const QString &script)
+    {
+        m_script = script.split('\n');
+        on_procline();
+    }
+
 
 public:
     t_rt_control(i_comm_generic *parser, QObject *parent = NULL):
