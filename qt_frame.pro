@@ -6,6 +6,28 @@ DEFINES += ELPP_QT_LOGGING    \
           ELPP_STRICT_SIZE_CHECK \
           ELPP_THREAD_SAFE
 
+# default on android (no need to add them to definitions.mk)
+#QMAKE_CXXFLAGS += -Werror=format-security
+#QMAKE_CXXFLAGS += -Werror=return-type
+#QMAKE_CXXFLAGS += -Wsign-compare
+#QMAKE_CXXFLAGS += -Werror=non-virtual-dtor
+#QMAKE_CXXFLAGS += -Werror=address
+#QMAKE_CXXFLAGS += -Werror=format-security
+#QMAKE_CXXFLAGS += -Werror=non-virtual-dtor
+#QMAKE_CXXFLAGS += -Werror=return-type
+#QMAKE_CXXFLAGS += -Werror=sequence-point
+
+# "emulates" valgrind behaviour. It's default on android
+# TODO: test also with -fstack-protector-strong?
+# NOTE: don't use -fstack-protector-all for performanse reasons.
+QMAKE_CXXFLAGS += -fstack-protector
+
+# required for windows build
+win32 {
+QMAKE_CXXFLAGS += -mno-ms-bitfields
+LIBS += -lssp
+}
+
 CONFIG += c++11
 
 TARGET = qt_frame

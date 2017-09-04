@@ -30,7 +30,7 @@ F_PROPS_ALL
 #undef F_PROPS_IT
     };
 
-    int t, n;
+    unsigned t, n;
     const char *en_del = NULL;
     const char *en_p = NULL;
 
@@ -46,11 +46,11 @@ F_PROPS_ALL
                 {
                     //jde o vycet - musime najit poradi shody == cislo enumu
                     char en[32] = "";
-                    int en_n = (sscanf(s+n+1, "%32[^#]", en) == 1) ? strlen(en) : 0;
+                    int en_n = (sscanf(s+n+1, "%31[^#]", en) == 1) ? strlen(en) : 0;
 
                     for(t = 0; en_n && en_p; t++)
                     {
-                        if(0 != memcmp(en_p + 1, en, en_n)) //+1 move behind '[' or '|'
+                        if(0 == memcmp(en_p + 1, en, en_n)) //+1 move behind '[' or '|'
                         {
                             ret[*o] = t;
                             break;
@@ -58,6 +58,8 @@ F_PROPS_ALL
 
                         en_del = strchr((en_p = en_del) + 1, '|');
                     }
+
+                    break;
                 }
                 else if(1 == sscanf(s+n+1, "%d", &t)) //posun za '='
                 {

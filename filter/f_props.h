@@ -31,7 +31,7 @@ const char *s_wf_T_aver = "#TA"; //[us], averaging time = casova konstanta filtr
     F_PROPS_IT(TA,[us],time contant of filter (averaging time))\
     F_PROPS_IT(N,[1..9999],order/number of coeficient)\
     F_PROPS_IT(RES,[-256..+256],resample order of interpolator(-) / decimator(+))\
-    F_PROPS_IT(FILTER,[IIRDIR1|IIRDIR2|IIRLATTICE|IIRBIQUADR|FIRDIR1|FIRDELAYLN|FIRLATTICE|FFTFILTER|AVERAGING],filter type enumerator)\
+    F_PROPS_IT(FILTER,[NONE|IIRDIR1|IIRDIR2|IIRLATTICE|IIRBIQUADR|FIRDIR1|FIRDELAYLN|FIRLATTICE|FFTFILTER|AVERAGING],filter type enumerator)\
     F_PROPS_IT(WINDOW,[WHANN|WHAMM|WFLAT|WBLCK|WRECT|WBRTL|WGAUS|WEXPO|WUSER],window type enumerator)\
     F_PROPS_IT(AVR,[EXPO|LIN|AUTO|DCREMOVAL],avaraging type enumerator)
 

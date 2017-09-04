@@ -45,6 +45,7 @@ public:
 
     virtual void callback(int ord, const QByteArray &par){
 
+        Q_UNUSED(ord); Q_UNUSED(par);
         //qDebug() << "ord" << ord << "par" << par;
     }
 

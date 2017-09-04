@@ -184,7 +184,7 @@ public:
     {
         fs = 0;
         ms_period = 50;
-        fc =(*m_filter)[s_wf_f_ce]; //neni vyplneno, bude tam 0 jao by slo o low pass
+        if(m_filter) fc = (*m_filter)[s_wf_f_ce]; //neni vyplneno, bude tam 0 jao by slo o low pass
         m_data = NULL;
     }
 

@@ -53,7 +53,7 @@ private:
         QStringList atoms = line.split(':');
         if(atoms.size() < 3) return false;
         if(atoms[0] != "") return false;
-        if((cmd.no = _identify_no(atoms[1])) < 0);// return false; - nevadi kdyz jde o broadcast
+        if((cmd.no = _identify_no(atoms[1])) < 0); // return false; - nevadi kdyz jde o broadcast
         if((cmd.ord = _identify_cmd(atoms[2])) < 0) return false;
         if(atoms.size() > 3) cmd.par = atoms[3];
         return true;
@@ -65,7 +65,7 @@ private:
                                corder.end(),
                                [ref](const char *s) -> bool {
                                     std::cout << s;
-                                    return false; //ref.startsWith(s);
+                                    return ref.startsWith(s);
                                } );
 
         if(it == corder.end())
@@ -148,28 +148,28 @@ private:
         }
         else if(cmd.par.startsWith("mic"))
         {
-            v.fname = QString("mic").arg(cnode.size());
+            v.fname = QString("mic%1").arg(cnode.size());
             v.node =  new t_rt_audioinput("");
         }
         else if(cmd.par.startsWith("playback"))
         {
-            v.fname = QString("playback").arg(cnode.size());
+            v.fname = QString("playback%1").arg(cnode.size());
             v.node =  new t_rt_audiooutput("");
         }
         else if(cmd.par.startsWith("filter"))
         {
-            v.fname = QString("filter").arg(cnode.size());
-            v.node =  new t_rt_filter("\"params\":{\"__def\":\"#B=500#fs=1000#FILTER=FIRDIR1#WINDOW=WHANN\"}");
+            v.fname = QString("filter%1").arg(cnode.size());
+            v.node =  new t_rt_filter("{\"properties\":{\"__def\":\"#B=500#fs=1000#FILTER=FIRDIR1#WINDOW=WHANN\"}}");
         }
         else if(cmd.par.startsWith("wav"))
         {
-            v.fname = QString("wav").arg(cnode.size());
+            v.fname = QString("wav%1").arg(cnode.size());
             path = (!cmd.par.isEmpty()) ? QString("{\"path\":{\"__def\":\"%1\"}}").arg(cmd.par) : "";
             v.node =  new t_rt_audiooutput(path);
         }
         else if(cmd.par.startsWith("rec"))
         {
-            v.fname = QString("rec").arg(cnode.size());
+            v.fname = QString("rec%1").arg(cnode.size());
             path = (!cmd.par.isEmpty()) ? QString("{\"path\":{\"__def\":\"%1\"}}").arg(cmd.par) : "";
             v.node =  new t_rt_recorder(path);
         }
@@ -177,16 +177,25 @@ private:
         if(v.node)
         {
             cnode.push_back(v);
+
+            if(cmd.no >= 0) //nejde o zdroj?
+            {
+                v.node->connect(cnode[cmd.no].node); //connect(zdroj)
+                _update_topo(cnode.size() - 1, cmd.no); //zdroj, pijavice - aktualizace topologie
+            }
+
+            _reply_ok();
             return true;
         }
 
+        _reply_error("unknown");
         return false;
     }
 
     bool _connect(const t_frame_cmd_decomp &cmd)
-    {
+    {  //connect jako takovy jsme zrusili
         if(cmd.par[0] == '?')
-        {
+        {   //todo  - presunout do extra fce na vypis topologie
             _printout_topo(cmd.no);
             _reply_ok();
             return true;
@@ -300,19 +309,20 @@ private slots:
                i.insert(0, cpath);
             }
 
+            //update path
+            if(i.endsWith(':'))
+            {   //aktualizace aktivni cesty
+                cpath = i;
+                _reply_ok();
+                return;
+            }
+
             //test loc
             if(!_validity(i, cmd))
             {
                 if(cmd.no < -1) _reply_error("adress");  //-1 broadcast
                 else if(cmd.ord < 0) _reply_error("order");
                 else _reply_error("syntax");
-                return;
-            }
-            //update path
-            if(i.endsWith(':'))
-            {   //aktualizace aktivni cesty
-                cpath = i;
-                _reply_ok();
                 return;
             }
 
@@ -331,7 +341,7 @@ private slots:
                 //pokud ma stav omezene trvani zapnem casovac a toglujeme
                 if((dl = cmd.par.toInt())) QTimer::singleShot(dl, cnode[cmd.no].node, SLOT(on_start(int)));
             }
-            else if(0 == strcmp(corder[cmd.ord], "wait"))
+            else if(0 == strcmp(corder[cmd.ord], "pause"))
             {
                 //pauza ve vykonu scriptu
                 if((m_delay = cmd.par.toInt())){;}
@@ -339,10 +349,6 @@ private slots:
             else if(0 == strcmp(corder[cmd.ord], "create"))
             {
                 _create(cmd);
-            }
-            else if(0 == strcmp(corder[cmd.ord], "connect"))
-            {
-                _connect(cmd);
             }
             else if(0 == strcmp(corder[cmd.ord], "cfg"))
             {
@@ -368,7 +374,7 @@ public:
     t_rt_control(i_comm_generic *parser, QObject *parent = NULL):
         QObject(parent),
         cpath("::"),
-        corder({"start", "stop", "wait", "create", "cfg", "connect", "help"}),
+        corder({"start", "stop", "pause", "create", "cfg", "help"}),
         ccomm(parser)
     {
         m_delay = 0;

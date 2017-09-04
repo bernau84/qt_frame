@@ -50,21 +50,21 @@ int main(int argc, char *argv[])
     t_rt_control ctrl_std(&io_std); //rizeni behu a nastaveni
 
     ctrl_std.do_script(
-                "::create=mic\r\n"              //root node
-                ":mic1:create=filter\r\n"       //absolute path
-                "filter2" //move
-                "create=playback\r\n"           //relative path
-                "create=rec\r\n"                //realtive path
-                ":mic1:start=10000\r\n"
-                "::pause=10000\r\n"
-                ":filter2:cfg=#fc=500\r\n"
-                ":mic1:start=10000\r\n"
-                "::pause=10000\r\n"
-                ":filter2:cfg=#fc=1000\r\n"
-                ":mic1:start=10000\r\n"
-                "::pause=10000\r\n"
-                ":filter2:cfg=#fc=1500\r\n"
-                ":mic1:start=10000\r\n"
+                "::create:mic\n"              //root node
+                ":mic1:create:filter\n"       //absolute path
+                ":filter2:\n"                  //move
+                "create:playback\n"           //relative path
+                "create:rec\n"                //realtive path
+                ":mic1:start:10000\n"
+                "::pause:10000\n"
+                ":filter2:cfg:#fc=500\n"
+                ":mic1:start:10000\n"
+                "::pause:10000\n"
+                ":filter2:cfg:#fc=1000\n"
+                ":mic1:start:10000\n"
+                "::pause:10000r\n"
+                ":filter2:cfg:#fc=1500\n"
+                ":mic1:start:10000\n"
                 );
 
 //    t_rt_audioinput aud_src("");

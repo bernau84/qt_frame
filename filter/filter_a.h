@@ -74,7 +74,7 @@ template <class T> class a_filter {
         bool has_props(){ return !par.empty(); }
 
         /*! \brief - info properties getter */
-        int operator[](const char *name){ return par[name]; }
+        int operator[](const char *name){ return (par.find(name) != par.end()) ?  par[name] : 0; }
 
         /*! \brief - inicialize shift register
          */
