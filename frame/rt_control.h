@@ -64,7 +64,7 @@ private:
         auto it = std::find_if(corder.begin(),
                                corder.end(),
                                [ref](const char *s) -> bool {
-                                    std::cout << s;
+                                    //std::cout << s;
                                     return ref.startsWith(s);
                                } );
 
@@ -105,13 +105,13 @@ private:
         }
 
         QString property_name = cmd.par.left(del - 1);
-        QString property_value = cmd.par.mid(del + 1);
+        QVariant property_value = cmd.par.mid(del + 1);
 
         QMetaObject::invokeMethod(cnode[cmd.no].node,
-                                  SLOT(on_change(const QString &, QVariant &)),
+                                  "on_change",
                                   Qt::AutoConnection,
                                   Q_ARG(QString, property_name),
-                                  Q_ARG(QString, property_value));
+                                  Q_ARG(QVariant &, property_value));
 
         _reply_ok();
         return true;
@@ -285,8 +285,13 @@ private slots:
             m_script.removeFirst();
 
             //a dalsi
-            if(m_delay) QTimer::singleShot(m_delay, this, SLOT(on_procline));
-            else on_procline();
+            if(m_delay)
+            {
+                QTimer::singleShot(m_delay, this, SLOT(on_procline()));
+                return;
+            }
+
+            on_procline();
         }
     }
 
@@ -331,15 +336,17 @@ private slots:
             {
                 //cmd.node->on_start(); - volame na primo
                 //volame pres "signal" - lepsi ze bude bezpecne i pro vicevlakonove systemy
-                QMetaObject::invokeMethod(cnode[cmd.no].node, SLOT(on_start(int)), Qt::AutoConnection);
+                QMetaObject::invokeMethod(cnode[cmd.no].node, "on_start", Qt::AutoConnection, Q_ARG(int, 0));
                 //pokud ma stav omezene trvani zapnem casovac a toglujeme
-                if((dl = cmd.par.toInt())) QTimer::singleShot(dl, cnode[cmd.no].node, SLOT(on_stop(int)));
+                if((dl = cmd.par.toInt()))
+                    QTimer::singleShot(dl, cnode[cmd.no].node, SLOT(on_stop()));
             }
             else if(0 == strcmp(corder[cmd.ord], "stop"))
             {
-                QMetaObject::invokeMethod(cnode[cmd.no].node, SLOT(on_stop(int)), Qt::AutoConnection);
+                QMetaObject::invokeMethod(cnode[cmd.no].node, "on_stop", Qt::AutoConnection, Q_ARG(int, 0));
                 //pokud ma stav omezene trvani zapnem casovac a toglujeme
-                if((dl = cmd.par.toInt())) QTimer::singleShot(dl, cnode[cmd.no].node, SLOT(on_start(int)));
+                if((dl = cmd.par.toInt()))
+                    QTimer::singleShot(dl, cnode[cmd.no].node, SLOT(on_start()));
             }
             else if(0 == strcmp(corder[cmd.ord], "pause"))
             {

@@ -72,10 +72,10 @@ signals:
 
 public slots:
     /*!  */
-    virtual void on_start(int p) = 0;
+    virtual void on_start(int p = 0) = 0;
 
     /*! */
-    virtual void on_stop(int p) = 0;
+    virtual void on_stop(int p = 0) = 0;
 
    /*! data processor */
    void on_update(QSharedPointer<i_rt_exchange> d){
