@@ -278,23 +278,20 @@ private slots:
     //spracovani jednoho radku skriptu
     void on_procline()
     {
-        QString s = m_script.first();
-        on_newline(-1, s.toLocal8Bit());
-        if(m_script.size() > 0){
-
+        while(m_script.size() > 0)
+        { //a dalsi
+            QString s = m_script.first();
+            on_newline(-1, s.toLocal8Bit());
             m_script.removeFirst();
 
-            //a dalsi
             if(m_delay)
-            {
+            {   //z prikazu vyplyva pauza
                 QTimer::singleShot(m_delay, this, SLOT(on_procline()));
+                m_delay = 0;
                 return;
             }
-
-            on_procline();
         }
     }
-
 
     //sem pristane signal od io
     void on_newline(int ord, const QByteArray &line){

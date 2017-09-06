@@ -56,13 +56,13 @@ int main(int argc, char *argv[])
                 "create:playback\n"           //relative path
                 "create:rec\n"                //realtive path
                 ":mic1:start:10000\n"
-                "::pause:10000\n"
+                "::pause:11000\n"
                 ":filter2:cfg:#fc=500\n"
                 ":mic1:start:10000\n"
-                "::pause:10000\n"
+                "::pause:11000\n"
                 ":filter2:cfg:#fc=1000\n"
                 ":mic1:start:10000\n"
-                "::pause:10000r\n"
+                "::pause:11000r\n"
                 ":filter2:cfg:#fc=1500\n"
                 ":mic1:start:10000\n"
                 );
