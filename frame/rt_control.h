@@ -141,10 +141,19 @@ private:
         if(cmd.par.startsWith("gen"))
         {
             v.fname = QString("gen%1").arg(cnode.size());
-            v.node =  new t_rt_sweep_generator("\"fs\":{\"__def\":8000},"
-                                               "\"f_0\":{\"__def\":500},"
-                                               "\"f_1\":{\"__def\":2500},"
-                                               "\"T\":{\"__def\":5000}");
+            if(cmd.par.compare("multisin"))
+            {
+                v.node =  new t_rt_sweep_generator("\"fs\":{\"__def\":8000},"
+                                                   "\"f_0\":{\"__def\":500},"
+                                                   "\"f_1\":{\"__def\":2500},"
+                                                   "\"T\":{\"__def\":5000}");
+            }
+            else
+            {
+                //todo - if multisim on begin
+                //than suppose rest is multisin params
+                //if emptu use default
+            }
         }
         else if(cmd.par.startsWith("mic"))
         {
