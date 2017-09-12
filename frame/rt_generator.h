@@ -3,6 +3,8 @@
 
 #include "rt_base_a.h"
 #include <QElapsedTimer>
+#include <QJsonArray>
+#include <QJsonValue>
 
 class t_rt_generator;
 
@@ -161,4 +163,45 @@ public:
 
     virtual ~t_rt_sweep_generator(){}
 };
+
+class t_rt_multisin_generator : public t_rt_generator
+{
+
+    Q_OBJECT
+
+protected:
+    using t_rt_generator::fs;
+
+private:
+    QJsonArray f_n;
+    QJsonArray A_n;
+    int T;
+
+    double a(double t)
+    {
+        t = fmod(t, T);
+        double a_t = 0;
+
+        for(int i=0; i<f_n.size(); i++)
+            if(i < A_n.size())
+                a_t += A_n[i].toInt() * cos(2*M_PI*t * f_n[i].toInt());
+            else
+                a_t += 0.9/f_n.size() * cos(2*M_PI*t * f_n[i].toInt());  //90% plneni predpoklad
+
+        return a_t;
+    }
+
+public:
+    t_rt_multisin_generator(const QString &js_config, QObject *parent = NULL):
+      t_rt_generator(js_config, std::bind(&t_rt_multisin_generator::a, this, std::placeholders::_1), parent)
+    {
+        f_n = par["f_n"].get().toArray();
+        A_n = par["A_n"].get().toArray();
+        T = par["T"].get().toInt();
+        fs = par["fs"].get().toInt();
+    }
+
+    virtual ~t_rt_multisin_generator(){}
+};
+
 #endif // RT_GENERATOR_H
