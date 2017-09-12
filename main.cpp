@@ -51,22 +51,29 @@ int main(int argc, char *argv[])
 
     ctrl_std.do_script(
                 //"::create:mic\n"              //root node
-                "::create:gen:multisin\n"              //root node
-                ":mic1:create:filter\n"       //absolute path
+                "::create:multi\n"              //root node
+                ":multi1:create:filter\n"       //absolute path
                 ":filter2:\n"                  //move
                 "create:playback\n"           //relative path
                 "create:rec\n"                //realtive path
-                ":mic1:start:10000\n"
+                ":multi1:start:10000\n"
                 "::pause:11000\n"
                 ":filter2:cfg:#fc=500\n"
-                ":mic1:start:10000\n"
+                ":multi1:start:10000\n"
                 "::pause:11000\n"
                 ":filter2:cfg:#fc=1000\n"
-                ":mic1:start:10000\n"
+                ":multi1:start:10000\n"
                 "::pause:11000r\n"
-                ":filter2:cfg:#fc=1500\n"
-                ":mic1:start:10000\n"
+                ":filter2:cfg:#fc=2000\n"
+                ":multi1:start:10000\n"
                 );
+
+//    ctrl_std.do_script(
+//                //"::create:mic\n"              //root node
+//                "::create:multi\n"              //root node
+//                ":multi1:create:playback\n"       //absolute path
+//                ":multi1:start\n"
+//                );
 
 //    t_rt_audioinput aud_src("");
 //    t_rt_generator sig_src("", [](double t) -> double { return 0.8*sin(2*M_PI*2000*t); });

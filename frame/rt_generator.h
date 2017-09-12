@@ -154,11 +154,16 @@ private:
 public:
     t_rt_sweep_generator(const QString &js_config, QObject *parent = NULL):
       t_rt_generator(js_config, std::bind(&t_rt_sweep_generator::a, this, std::placeholders::_1), parent)
-    {        
-        f_0 = par["f_0"].get().toInt();
-        f_1 = par["f_0"].get().toInt();
-        T = par["T"].get().toInt();
-        fs = par["fs"].get().toInt();
+    {
+        f_0 = 100;
+        f_1 = 3800;
+        fs = 8000;
+        T = 10000;
+
+        if(par.ask("f_0")) f_0 = par["f_0"].get().toInt();
+        if(par.ask("f_1")) f_1 = par["f_0"].get().toInt();
+        if(par.ask("T")) T = par["T"].get().toInt();
+        if(par.ask("fs")) fs = par["fs"].get().toInt();
     }
 
     virtual ~t_rt_sweep_generator(){}
@@ -175,18 +180,18 @@ protected:
 private:
     QJsonArray f_n;
     QJsonArray A_n;
-    int T;
 
     double a(double t)
     {
-        t = fmod(t, T);
         double a_t = 0;
+        double fi = 2*M_PI*t;
 
         for(int i=0; i<f_n.size(); i++)
-            if(i < A_n.size())
-                a_t += A_n[i].toInt() * cos(2*M_PI*t * f_n[i].toInt());
-            else
-                a_t += 0.9/f_n.size() * cos(2*M_PI*t * f_n[i].toInt());  //90% plneni predpoklad
+        {
+            //90% plneni predpoklad a vsechny amp stejne
+            double A = (i < A_n.size()) ? A_n[i].toDouble() : 0.9/f_n.size();
+            a_t += A * cos(fi * f_n[i].toInt());
+        }
 
         return a_t;
     }
@@ -195,10 +200,13 @@ public:
     t_rt_multisin_generator(const QString &js_config, QObject *parent = NULL):
       t_rt_generator(js_config, std::bind(&t_rt_multisin_generator::a, this, std::placeholders::_1), parent)
     {
-        f_n = par["f_n"].get().toArray();
-        A_n = par["A_n"].get().toArray();
-        T = par["T"].get().toInt();
-        fs = par["fs"].get().toInt();
+        f_n = {100, 250, 400, 1000, 2000, 3000}; //{1000, 2000};
+        A_n = {0.3, 0.2, 0.1, 0.08, 0.05, 0.02}; //{0.3, 0.2};
+        fs = 8000;
+
+        if(par.ask("f_n")) f_n = par["f_n"].get().toArray();
+        if(par.ask("A_n")) A_n = par["A_n"].get().toArray();
+        if(par.ask("fs")) fs = par["fs"].get().toInt();
     }
 
     virtual ~t_rt_multisin_generator(){}

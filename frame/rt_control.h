@@ -126,7 +126,8 @@ private:
         if(cmd.par.compare("?") == 0)
         {
             QString help;
-            help += "gen{props} - generator with json mandatory fs, f_0, f_1, T\r\n";
+            help += "sweep{props} - generator with json mandatory fs, f_0, f_1, T\r\n";
+            help += "multi{props} - generator with json mandatory fs, f_0, f_1, T\r\n";
             help += "mic(soundcard) - microphone input\r\n";
             help += "playback(soundcard) - speaker outpu\r\n";
             help += "wav(filename) - record as signal source\r\n";
@@ -138,22 +139,18 @@ private:
         }
 
         t_frame_cnode v = {"", NULL};
-        if(cmd.par.startsWith("gen"))
+        if(cmd.par.startsWith("sweep"))
         {
-            v.fname = QString("gen%1").arg(cnode.size());
-            if(cmd.par.compare("multisin"))
-            {
-                v.node =  new t_rt_sweep_generator("\"fs\":{\"__def\":8000},"
+            v.fname = QString("sweep%1").arg(cnode.size());
+            v.node =  new t_rt_sweep_generator("\"fs\":{\"__def\":8000},"
                                                    "\"f_0\":{\"__def\":500},"
                                                    "\"f_1\":{\"__def\":2500},"
                                                    "\"T\":{\"__def\":5000}");
-            }
-            else
-            {
-                //todo - if multisim on begin
-                //than suppose rest is multisin params
-                //if emptu use default
-            }
+        }
+        else if(cmd.par.startsWith("multi"))
+        {
+            v.fname = QString("multi%1").arg(cnode.size()); //multisin
+            v.node =  new t_rt_multisin_generator("");
         }
         else if(cmd.par.startsWith("mic"))
         {
