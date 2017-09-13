@@ -72,10 +72,8 @@ private:
         {
             case a_filter<double>::FIR_DIRECT1:
                 return new t_filter_wfir<double>(ford, fwin, props, fdecim);
-            break;
             case a_filter<double>::AVERAGING:
                 return new t_filter_avr<double>(fmode, fTA, fdecim);
-            break;
             default: break;
         }
 
@@ -160,11 +158,6 @@ public slots:
     virtual void on_stop(int p){
 
         Q_UNUSED(p);
-    }
-
-    virtual void on_change(){
-
-
     }
 
 public:

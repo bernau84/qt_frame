@@ -107,6 +107,14 @@ private:
         QString property_name = cmd.par.left(del - 1);
         QVariant property_value = cmd.par.mid(del + 1);
 
+        if(property_name[0] == '#')
+        {   //nenastavujeme konkretrni cfg property ale propery "parameters"
+            //tyka se hlaven asi filtru
+            //bypass
+            property_name = "properties";
+            property_value = cmd.par;
+        }
+
         QMetaObject::invokeMethod(cnode[cmd.no].node,
                                   "on_change",
                                   Qt::AutoConnection,
