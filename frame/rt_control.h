@@ -85,7 +85,7 @@ private:
             auto it = std::find_if(cnode.begin(),
                                    cnode.end(),
                                    [&](t_frame_cnode v) -> bool {
-                                        return ref.compare(v.fname);
+                                        return (0 == v.fname.compare(ref));
                                    } );
 
             if(it != cnode.end())

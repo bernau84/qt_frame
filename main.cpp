@@ -52,20 +52,20 @@ int main(int argc, char *argv[])
     ctrl_std.do_script(
                 //"::create:mic\n"              //root node
                 "::create:multi\n"              //root node
-                ":multi1:create:filter\n"       //absolute path
-                ":filter2:\n"                  //move
+                ":multi0:create:filter\n"       //absolute path
+                ":filter1:\n"                  //move
                 "create:playback\n"           //relative path
                 "create:rec\n"                //realtive path
-                ":multi1:start:10000\n"
+                ":multi0:start:10000\n"
                 "::pause:11000\n"
-                ":filter2:cfg:#fc=500\n"
-                ":multi1:start:10000\n"
+                ":filter1:cfg:#fc=500\n"
+                ":multi0:start:10000\n"
                 "::pause:11000\n"
-                ":filter2:cfg:#fc=1000\n"
-                ":multi1:start:10000\n"
+                ":filter1:cfg:#fc=1000\n"
+                ":multi0:start:10000\n"
                 "::pause:11000r\n"
-                ":filter2:cfg:#fc=2000\n"
-                ":multi1:start:10000\n"
+                ":filter1:cfg:#fc=2000\n"
+                ":multi0:start:10000\n"
                 );
 
 //    ctrl_std.do_script(

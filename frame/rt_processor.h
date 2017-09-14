@@ -23,7 +23,7 @@ private:
 
     /*! indexed acces */
     virtual double f_t(unsigned i){ return (t0 + (i+1)*(t1 - t0)); }
-    virtual double f_a(unsigned i){ return (1.0 * a[i]) / (1 << 15); }
+    virtual double f_a(unsigned i){ return a[i]; }
     virtual double f_f(unsigned i){ i = i; return f; }
 
     /*! pointer to array */
@@ -82,7 +82,10 @@ private:
 
     /*! init privates from configuration */
     virtual int reload(int p){
+
         Q_UNUSED(p);
+        QString sprop = par["properties"].get().toString();
+        if(m_filter) m_filter->tune(sprop.toLatin1().constData());
         return 0;
     }
 
@@ -114,6 +117,7 @@ private:
 
             unsigned ntotal = 0;
             const double *out = m_filter->proc(*a++, &ntotal);
+            //out = a; //bypass for debug
             if(out){  // != 0 refresh
 
                 if(m_data == NULL)
@@ -131,9 +135,9 @@ private:
                     continue;
 
                 QSharedPointer<i_rt_exchange> pp(m_data);
-                LOG(INFO) << m_data->t0/1000.0 << "[s]/"
-                          << m_data->a.size() << "samples filtered-out";
-                //          << "dbg" << m_data->a;
+                LOG(INFO) << m_data->t0 << "[s]/"
+                          << m_data->a.size()
+                          << "samples filtered-out";
 
                 emit update(pp);
                 m_data = NULL;

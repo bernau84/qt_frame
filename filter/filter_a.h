@@ -41,6 +41,7 @@ template <class T> class a_filter {
 
         t_tf_props par;  //info parameters (B, fc, TA, ..) see f_props.h
 
+    public:
 
         /*! \brief - indeirect way mofify filter properties via property
          */
@@ -56,7 +57,6 @@ template <class T> class a_filter {
             t_tf_props par = f_str2tf(config);
             tune(par);
         }
-    public:
 
         /*! \brief - defines behaviour of filter,
             n_2_proc == 0 defines valid output in decimation mode

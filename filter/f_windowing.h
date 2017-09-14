@@ -8,15 +8,15 @@
  */
 enum e_win {
 
-    WHANN = 0x10,
-    WHAMM = 0x11,
-    WFLAT = 0x12,
-    WBLCK = 0x14,
-    WRECT = 0x18,
-    WBRTL = 0x20,
-    WGAUS = 0x21,
-    WEXPO = 0x22, //TD
-    WUSER = 0x80    //TD
+    WHANN,
+    WHAMM,
+    WFLAT,
+    WBLCK,
+    WRECT,
+    WBRTL,
+    WGAUS,
+    WEXPO, //TD
+    WUSER    //TD
 };
 
 static t_tf_props fwin_pro_0;  //empty settings
