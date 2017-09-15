@@ -3,20 +3,6 @@
 
 #include "easylogging++.h"
 
-/*
-const char *s_wf_fs = "#fs";  //[Hz] sampling frequency
-const char *s_wf_B = "#B";  //[Hz] bandwith na -3dB (tam kde apml. spadne na sqrt(2))
-const char *s_wf_G = "#G";  //[dB] gain
-const char *s_wf_Beff = "#Beff";  //efektivni bandwith fm/fs
-const char *s_wf_D = "#D";  //[dB/dec] tlumeni na dekade
-const char *s_wf_D_oct = "#Doct";  //[dB/oct] tlumeni na oktave
-const char *s_wf_GD = "#GD"; //group delay - todo: tady je problem se definici protoze se meni s frekvenci, muze byt promerne, nebo efektivni
-const char *s_wf_F_sh = "#f_sh"; //posun idealni LP (zakladni) charaketeristiky
-const char *s_wf_F_type = "#f_ty"; //zakladni charakteristika filtru - lp, hp, bp, notch, all, diff...
-const char *s_wf_F_central = "#f_ce"; //centralni frekvence - nahrazuje hodne typ vyse (0 - lp, 1 - hp, <0,1> - bp)
-const char *s_wf_T_aver = "#TA"; //[us], averaging time = casova konstanta filtru
-*/
-
 #define F_PROPS_ALL\
     F_PROPS_IT(fs,[Hz],sampling frequency)\
     F_PROPS_IT(B,[Hz],bandwith na -3dB (tam kde apml. spadne na sqrt(2)))\

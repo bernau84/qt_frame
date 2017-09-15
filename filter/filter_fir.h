@@ -136,18 +136,28 @@ public:
 
         t_tf_props::const_iterator it;
 
-        int B = 0, fs = 1000, G = 0, fc = 0;
+        int B = 0, fs = 0, G = 0, fc = 0;
         if(p.end() != (it = p.find(s_wf_B))) B = it->second;
         if(p.end() != (it = p.find(s_wf_G))) G = it->second;
         if(p.end() != (it = p.find(s_wf_fs))) fs = it->second;
         if(p.end() != (it = p.find(s_wf_f_ce))) fc = it->second;
 
-        if(B && fs) fm = (1.0 * B/2) / fs;  //mezni fr je polovinou B u ideal LP
-        if(G) A = pow(10, G/20.0);
+        if(B)
+        {
+            fm = (1.0 * B/2) / fs;  //mezni fr je polovinou B u ideal LP
+            num = fdesign(fm, m_N, m_win);
+        }
 
-        num = fdesign(fm, m_N, m_win);
-        if(fc) fshift((1.0 * fc) / fs, num);
-        for(int i=0; i<m_N; i++) num[i] *= A;  //gain
+        if(fc && fs)
+        {
+            fshift((1.0 * fc) / fs, num);
+        }
+
+        if(G)
+        {
+            A = pow(10, G/20.0);
+            for(int i=0; i<m_N; i++) num[i] *= A;  //gain
+        }
     }
 
     t_filter_wfir(const a_filter<T> &src)

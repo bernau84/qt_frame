@@ -173,7 +173,7 @@ private:
         else if(cmd.par.startsWith("filter"))
         {
             v.fname = QString("filter%1").arg(cnode.size());
-            v.node =  new t_rt_filter("{\"properties\":{\"__def\":\"#B=500#fs=1000#FILTER=FIRDIR1#WINDOW=WHANN\"}}");
+            v.node =  new t_rt_filter("{\"properties\":{\"__def\":\"#B=500#fs=8000#FILTER=FIRDIR1#WINDOW=WHANN\"}}");
         }
         else if(cmd.par.startsWith("wav"))
         {

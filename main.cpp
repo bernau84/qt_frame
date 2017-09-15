@@ -58,13 +58,13 @@ int main(int argc, char *argv[])
                 "create:rec\n"                //realtive path
                 ":multi0:start:10000\n"
                 "::pause:11000\n"
-                ":filter1:cfg:#fc=500\n"
+                ":filter1:cfg:#f_ce=500#fs=8000\n"
                 ":multi0:start:10000\n"
                 "::pause:11000\n"
-                ":filter1:cfg:#fc=1000\n"
+                ":filter1:cfg:#f_ce=1000#fs=8000\n"
                 ":multi0:start:10000\n"
                 "::pause:11000r\n"
-                ":filter1:cfg:#fc=2000\n"
+                ":filter1:cfg:#f_ce=2000#fs=8000\n"
                 ":multi0:start:10000\n"
                 );
 

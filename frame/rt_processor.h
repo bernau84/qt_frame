@@ -117,7 +117,7 @@ private:
 
             unsigned ntotal = 0;
             const double *out = m_filter->proc(*a++, &ntotal);
-            //out = a; //bypass for debug
+            //const double *out = a++; //bypass for debug
             if(out){  // != 0 refresh
 
                 if(m_data == NULL)
