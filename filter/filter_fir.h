@@ -44,8 +44,16 @@ public:
      */
     static void fshift(double f, std::vector<T> &in){
 
+        double norm = 0;
+
         for(unsigned i=0; i<in.size(); i++)
+        {
             in[i] *= cos(2*M_PI*f*i);
+            norm += in[i];
+        }
+
+        for(unsigned i=0; i<in.size(); i++)
+            in[i] /= norm;
     }
 
     /* modifikace filtru posunem
@@ -105,6 +113,7 @@ public:
     static std::vector<T> fdesign(double fm, int N, e_win w = WRECT){
 
         std::vector<T> out(N);
+        T norm = 0;
 
         //eval sinc(x)
         out[N/2] = fm; //z lHopitalova hodnota v nule (pouzije se pro N licha)
@@ -115,8 +124,14 @@ public:
         }
 
         //aplikace okynka
-        for(int i=0; i<N; i++)
+        for(int i=0; i<N; i++){
+
             out[i] *= f_win<T>(i, N, w);  //from f_windovin
+            norm += out[i];
+        }
+
+        for(int i=0; i<N; i++)
+            out[i] /= norm;  //okynko ma amp na 1 jinak neni normovane proto /N
 
         return out;
     }
