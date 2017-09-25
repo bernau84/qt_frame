@@ -3,6 +3,7 @@
 
 #include "filter_a.h"
 #include "f_windowing.h"
+#include "easylogging++.h"
 
 template <class T> class t_filter_fir : public a_filter<T> {
 
@@ -52,8 +53,10 @@ public:
             norm += in[i];
         }
 
-        for(unsigned i=0; i<in.size(); i++)
-            in[i] /= norm;
+//        for(unsigned i=0; i<in.size(); i++)
+//            in[i] /= norm;
+
+        LOG(INFO) << in;
     }
 
     /* modifikace filtru posunem
@@ -133,6 +136,7 @@ public:
         for(int i=0; i<N; i++)
             out[i] /= norm;  //okynko ma amp na 1 jinak neni normovane proto /N
 
+        LOG(INFO) << out;
         return out;
     }
 
@@ -155,7 +159,8 @@ public:
         if(p.end() != (it = p.find(s_wf_B))) B = it->second;
         if(p.end() != (it = p.find(s_wf_G))) G = it->second;
         if(p.end() != (it = p.find(s_wf_fs))) fs = it->second;
-        if(p.end() != (it = p.find(s_wf_f_ce))) fc = it->second;
+        if(p.end() != (it = p.find(s_wf_f_ce))) fc = it->second;  //central freq for new design
+        else if(p.end() != (it = p.find(s_wf_f_sh))) fc = it->second; //shift for modification
 
         if(B)
         {

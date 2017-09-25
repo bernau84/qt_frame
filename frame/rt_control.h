@@ -150,15 +150,16 @@ private:
         if(cmd.par.startsWith("sweep"))
         {
             v.fname = QString("sweep%1").arg(cnode.size());
-            v.node =  new t_rt_sweep_generator("\"fs\":{\"__def\":8000},"
+            v.node =  new t_rt_sweep_generator("{\"fs\":{\"__def\":8000},"
                                                    "\"f_0\":{\"__def\":500},"
                                                    "\"f_1\":{\"__def\":2500},"
-                                                   "\"T\":{\"__def\":5000}");
+                                                   "\"T\":{\"__def\":5000}}");
         }
         else if(cmd.par.startsWith("multi"))
         {
             v.fname = QString("multi%1").arg(cnode.size()); //multisin
-            v.node =  new t_rt_multisin_generator("");
+            v.node =  new t_rt_multisin_generator("{\"f_n\":{\"__def\":[250, 800, 1500]},"
+                                                  "\"A_n\":{\"__def\":[]}}");
         }
         else if(cmd.par.startsWith("mic"))
         {

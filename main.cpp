@@ -45,6 +45,12 @@ int main(int argc, char *argv[])
 //    for(int i=0; i<16; i++)
 //        LOG(INFO) << i << " " << *(wfir.proc(1));
 
+//    t_filter_wfir<double> f(64, WHANN, "#B=500#fs=8000#FILTER=FIRDIR1#WINDOW=WHANN");
+//    t_tf_props p = f_str2tf("#f_sh=500#fs=8000");
+//    f.tune(p);
+//    f.tune(p);
+//    f.tune(p);
+
     t_comm_parser_string nl_parser(NULL);  //hlida jen nove radky
     t_comm_stdte io_std(dynamic_cast<i_comm_parser *>(&nl_parser)); //cte a zapisuje do std terminalu
     t_rt_control ctrl_std(&io_std); //rizeni behu a nastaveni

@@ -3,6 +3,7 @@
 
 #include "filter_a.h"
 #include "f_windowing.h"
+#include "easylogging++.h"
 
 template <class T> class t_filter_avr : public a_filter<T> {
 
