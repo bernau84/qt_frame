@@ -59,7 +59,6 @@ HEADERS += \
     frame/rt_wavinput.h \
     filter/filter_a.h \
     filter/f_windowing.h \
-    frame/rt_processor.h \
     filter/f_props.h \
     filter/filter_fir.h \
     filter/filter_avr.h \
@@ -71,4 +70,6 @@ HEADERS += \
     control/t_comm_io_tcp.h \
     control/t_comm_parser_binary_ex.h \
     control/t_comm_parser_binary.h \
-    frame/rt_control.h
+    frame/rt_control.h \
+    frame/rt_filter.h \
+    frame/rt_processor.h

@@ -11,7 +11,7 @@
 #include "rt_recorder.h"
 #include "rt_generator.h"
 #include "rt_wavinput.h"
-#include "rt_processor.h"
+#include "rt_filter.h"
 #include "rt_control.h"
 #include "t_comm_io_std.h"
 

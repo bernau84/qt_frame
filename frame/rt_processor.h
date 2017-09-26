@@ -1,23 +1,24 @@
 #ifndef RT_PROCESSOR_H
 #define RT_PROCESSOR_H
 
-#include "filter_avr.h"
-#include "filter_fir.h"
 #include "rt_base_a.h"
 #include <QElapsedTimer>
 
-class t_rt_filter;
+//podobne jako rt_filter, jen nejde o konvolucni pristup
+//ale spis korelacni, autokorelacni, vypocty vykonu a jine
 
-class t_rt_filter_ex : public i_rt_exchange {
+//stejny s t_rt_filter_ex, jen friend je to vuci jine tride
+class t_rt_processor_ex : public i_rt_exchange {
 
 private:
-    friend class t_rt_filter;
+    friend class t_rt_processor;
 
     QVector<double> a;
     double t0;
     double t1;
     double f;
 
+public:
     /*! length of individual array */
     virtual int n(){ return a.size(); }
 
@@ -31,13 +32,13 @@ private:
     virtual const double *f_f(){ return NULL; }
     virtual const double *f_t(){ return NULL; }
 
-    t_rt_filter_ex(){}
-    virtual ~t_rt_filter_ex(){
+    t_rt_processor_ex(){}
+    virtual ~t_rt_processor_ex(){
         // LOG(TRACE) << "released";
     }
 };
 
-class t_rt_filter : public a_rt_base {
+class t_rt_processor : public a_rt_base {
 
     Q_OBJECT
 
@@ -45,47 +46,17 @@ protected:
     int fs;
     int ms_period;
     int fc;
+    uint64_t ntotal;
+    std::function<double(double t, double a)> f_proc
 
 private:
-    a_filter<double> *m_filter;
     QVector<double>::Iterator xi;
-    t_rt_filter_ex *m_data;
-
-    a_filter<double> *_filter_factory(const QString &s_props)
-    {
-        t_tf_props props = f_str2tf(s_props.toLatin1().constData());
-
-        a_filter<double>::e_type ftype = a_filter<double>::FIR_DIRECT1;
-        e_win fwin = WHANN;
-        int ford = 64;
-        int fdecim = 1;
-        t_filter_avr<double>::e_filter_avr fmode;
-        int fTA;
-
-        if(props.find(s_wf_RES) != props.end()) fdecim = props[s_wf_RES];
-        if(props.find(s_wf_FILTER) != props.end()) ftype = (a_filter<double>::e_type)props[s_wf_FILTER];
-        if(props.find(s_wf_WINDOW) != props.end()) fwin = (e_win)props[s_wf_WINDOW];
-        if(props.find(s_wf_AVR) != props.end()) fmode = (t_filter_avr<double>::e_filter_avr)props[s_wf_AVR];
-        if(props.find(s_wf_TA) != props.end()) fTA = props[s_wf_TA];
-
-        switch(ftype)
-        {
-            case a_filter<double>::FIR_DIRECT1:
-                return new t_filter_wfir<double>(ford, fwin, props, fdecim);
-            case a_filter<double>::AVERAGING:
-                return new t_filter_avr<double>(fmode, fTA, fdecim);
-            default: break;
-        }
-
-        return NULL;
-    }
+    t_rt_processor_ex *m_data;
 
     /*! init privates from configuration */
     virtual int reload(int p){
 
         Q_UNUSED(p);
-        QString sprop = par["properties"].get().toString();
-        if(m_filter) m_filter->tune(sprop.toLatin1().constData());
         return 0;
     }
 
@@ -115,33 +86,30 @@ private:
 
         for(int i=0; i<p->n(); i++){
 
-            unsigned ntotal = 0;
-            const double *out = m_filter->proc(*a++, &ntotal);
-            //const double *out = a++; //bypass for debug
-            if(out){  // != 0 refresh
+            double out = f_proc(*a++, p->f_t(ntotal++));
+            //out = a++; //bypass for debug
 
-                if(m_data == NULL)
-                    if((m_data = new t_rt_filter_ex())){  //alokujem novy buffer - stary se uvolni diky SharedPnt
+            if(m_data == NULL)
+                if((m_data = new t_rt_processor_ex())){  //alokujem novy buffer - stary se uvolni diky SharedPnt
 
-                        m_data->a.resize((fs * ms_period) / 1000);
-                        m_data->f = fs; //fc;
-                        m_data->t1 = m_data->t0 = (1.0 * ntotal) / fs;
-                        m_data->t1 += 1.0 / fs;
-                        xi = m_data->a.begin();
-                    }
+                    m_data->a.resize((fs * ms_period) / 1000);
+                    m_data->f = fs; //fc;
+                    m_data->t1 = m_data->t0 = (1.0 * ntotal) / fs;
+                    m_data->t1 += 1.0 / fs;
+                    xi = m_data->a.begin();
+                }
 
-                *xi++ = *out;
-                if(xi != m_data->a.end())
-                    continue;
+            *xi++ = out;
+            if(xi != m_data->a.end())
+                continue;
 
-                QSharedPointer<i_rt_exchange> pp(m_data);
-                LOG(INFO) << m_data->t0 << "[s]/"
-                          << m_data->a.size()
-                          << "samples filtered-out";
+            QSharedPointer<i_rt_exchange> pp(m_data);
+            LOG(INFO) << m_data->t0 << "[s]/"
+                      << m_data->a.size()
+                      << "samples processed-out";
 
-                emit update(pp);
-                m_data = NULL;
-            }
+            emit update(pp);
+            m_data = NULL;
         }
 
         return 1;
@@ -152,7 +120,6 @@ public slots:
     virtual void on_start(int p){
 
         Q_UNUSED(p);
-        m_filter->reset();
 
         if(m_data)
             delete(m_data);
@@ -165,27 +132,17 @@ public slots:
     }
 
 public:
-    t_rt_filter(const QString &js_config, a_filter<double> &_f_filter, QObject *parent = NULL):
-      a_rt_base(js_config, parent),
-      m_filter(&_f_filter)
+    t_rt_processor(const QString &js_config, std::function<double(double t, double a)> _f_proc, QObject *parent = NULL):
+        a_rt_base(js_config, parent),
+        f_proc(_f_proc)
     {
         fs = 0;
         ms_period = 50;
-        fc = (*m_filter)[s_wf_f_ce]; //neni vyplneno, bude tam 0 jao by slo o low pass
         m_data = NULL;
     }
 
-    t_rt_filter(const QString &js_config, QObject *parent = NULL):
-      a_rt_base(js_config, parent),
-      m_filter(_filter_factory(par["properties"].get().toString()))
-    {
-        fs = 0;
-        ms_period = 50;
-        if(m_filter) fc = (*m_filter)[s_wf_f_ce]; //neni vyplneno, bude tam 0 jao by slo o low pass
-        m_data = NULL;
-    }
-
-    virtual ~t_rt_filter(){}
+    virtual ~t_rt_processor(){}
 };
+
 
 #endif // RT_PROCESSOR_H

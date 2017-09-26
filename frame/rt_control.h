@@ -12,7 +12,7 @@
 #include "frame/rt_wavinput.h"
 #include "frame/rt_recorder.h"
 #include "frame/rt_generator.h"
-#include "frame/rt_processor.h"
+#include "frame/rt_filter.h"
 
 struct t_frame_cnode
 {
