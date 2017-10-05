@@ -1,0 +1,4 @@
+#ifndef FILTER_SHIFTER_H
+#define FILTER_SHIFTER_H
+
+#endif // FILTER_SHIFTER_H
