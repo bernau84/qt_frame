@@ -13,6 +13,7 @@
 #include "frame/rt_recorder.h"
 #include "frame/rt_generator.h"
 #include "frame/rt_filter.h"
+#include "frame/rt_processor.h"
 
 struct t_frame_cnode
 {
@@ -135,7 +136,8 @@ private:
         {
             QString help;
             help += "sweep{props} - generator with json mandatory fs, f_0, f_1, T\r\n";
-            help += "multi{props} - generator with json mandatory fs, f_0, f_1, T\r\n";
+            help += "multi{props} - generator with json mandatory fs, [f_x], [A_x]\r\n";
+            help += "corr{props} - time based correlator\r\n";
             help += "mic(soundcard) - microphone input\r\n";
             help += "playback(soundcard) - speaker outpu\r\n";
             help += "wav(filename) - record as signal source\r\n";
@@ -160,6 +162,11 @@ private:
             v.fname = QString("multi%1").arg(cnode.size()); //multisin
             v.node =  new t_rt_multisin_generator("{\"f_n\":{\"__def\":[250, 800, 1500]},"
                                                   "\"A_n\":{\"__def\":[]}}");
+        }
+        else if(cmd.par.startsWith("corr"))
+        {
+            v.fname = QString("corr%1").arg(cnode.size());
+            v.node =  new t_rt_harm_correlator("");
         }
         else if(cmd.par.startsWith("mic"))
         {

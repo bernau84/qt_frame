@@ -72,4 +72,6 @@ HEADERS += \
     control/t_comm_parser_binary.h \
     frame/rt_control.h \
     frame/rt_filter.h \
-    frame/rt_processor.h
+    frame/rt_processor.h \
+    filter/filter_shifter.h \
+    filter/filter_bank.h

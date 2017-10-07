@@ -25,7 +25,8 @@ template <class T> class a_filter {
             FIR_DELAYLN = 6,
             FIR_LATTICE = 7,
             FFT_FILTER = 8,
-            AVERAGING = 9
+            AVERAGING = 9,
+            SHIFTER = 10
         };
 
     protected:

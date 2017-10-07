@@ -169,7 +169,7 @@ public:
     virtual ~t_rt_sweep_generator(){}
 };
 
-class t_rt_multisin_generator : public t_rt_generator
+class   t_rt_multisin_generator : public t_rt_generator
 {
 
     Q_OBJECT

@@ -1,8 +1,9 @@
-#ifndef RT_PROCESSOR_H
-#define RT_PROCESSOR_H
+#ifndef RT_FILTER_H
+#define RT_FILTER_H
 
 #include "filter_avr.h"
 #include "filter_fir.h"
+#include "filter_shifter.h"
 #include "rt_base_a.h"
 #include <QElapsedTimer>
 
@@ -56,25 +57,31 @@ private:
     {
         t_tf_props props = f_str2tf(s_props.toLatin1().constData());
 
+        //defaults
         a_filter<double>::e_type ftype = a_filter<double>::FIR_DIRECT1;
         e_win fwin = WHANN;
         int ford = 64;
         int fdecim = 1;
         t_filter_avr<double>::e_filter_avr fmode;
-        int fTA;
+        int fTA = 0;
 
+        //custom par
         if(props.find(s_wf_RES) != props.end()) fdecim = props[s_wf_RES];
         if(props.find(s_wf_FILTER) != props.end()) ftype = (a_filter<double>::e_type)props[s_wf_FILTER];
         if(props.find(s_wf_WINDOW) != props.end()) fwin = (e_win)props[s_wf_WINDOW];
         if(props.find(s_wf_AVR) != props.end()) fmode = (t_filter_avr<double>::e_filter_avr)props[s_wf_AVR];
         if(props.find(s_wf_TA) != props.end()) fTA = props[s_wf_TA];
+        if(props.find(s_wf_N) != props.end()) ford = props[s_wf_N];
 
+        //fabrique
         switch(ftype)
         {
             case a_filter<double>::FIR_DIRECT1:
                 return new t_filter_wfir<double>(ford, fwin, props, fdecim);
             case a_filter<double>::AVERAGING:
                 return new t_filter_avr<double>(fmode, fTA, fdecim);
+            case a_filter<double>::SHIFTER:
+                return new t_filter_shift<double>(ford, props, fdecim);
             default: break;
         }
 
@@ -189,4 +196,4 @@ public:
     virtual ~t_rt_filter(){}
 };
 
-#endif // RT_PROCESSOR_H
+#endif // RT_FILTER_H
