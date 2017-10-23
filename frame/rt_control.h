@@ -166,7 +166,7 @@ private:
         else if(cmd.par.startsWith("corr"))
         {
             v.fname = QString("corr%1").arg(cnode.size());
-            v.node =  new t_rt_harm_correlator("");
+            v.node = new t_rt_harm_correlator("");
         }
         else if(cmd.par.startsWith("mic"))
         {
@@ -176,24 +176,26 @@ private:
         else if(cmd.par.startsWith("playback"))
         {
             v.fname = QString("playback%1").arg(cnode.size());
-            v.node =  new t_rt_audiooutput("");
+            v.node = new t_rt_audiooutput("");
         }
         else if(cmd.par.startsWith("filter"))
         {
             v.fname = QString("filter%1").arg(cnode.size());
-            v.node =  new t_rt_filter("{\"properties\":{\"__def\":\"#B=500#fs=8000#FILTER=FIRDIR1#WINDOW=WHANN\"}}");
+            QString prop = "#B=500#fs=8000#FILTER=FIRDIR1#WINDOW=WHANN#fc=3500";  //default
+            if(!cmd.par.isEmpty()) prop = cmd.par;
+            v.node = new t_rt_filter(QString("{\"properties\":{\"__def\":\"%1\"}}").arg(prop));
         }
         else if(cmd.par.startsWith("wav"))
         {
             v.fname = QString("wav%1").arg(cnode.size());
             path = (!cmd.par.isEmpty()) ? QString("{\"path\":{\"__def\":\"%1\"}}").arg(cmd.par) : "";
-            v.node =  new t_rt_audiooutput(path);
+            v.node = new t_rt_audiooutput(path);
         }
         else if(cmd.par.startsWith("rec"))
         {
             v.fname = QString("rec%1").arg(cnode.size());
             path = (!cmd.par.isEmpty()) ? QString("{\"path\":{\"__def\":\"%1\"}}").arg(cmd.par) : "";
-            v.node =  new t_rt_recorder(path);
+            v.node = new t_rt_recorder(path);
         }
 
         if(v.node)
