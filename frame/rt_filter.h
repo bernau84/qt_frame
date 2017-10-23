@@ -81,7 +81,7 @@ private:
             case a_filter<double>::AVERAGING:
                 return new t_filter_avr<double>(fmode, fTA, fdecim);
             case a_filter<double>::SHIFTER:
-                return new t_filter_shift<double>(ford, props, fdecim);
+                return new t_filter_shifter<double>(ford, props, fdecim);
             default: break;
         }
 

@@ -47,17 +47,19 @@ public:
     */
     virtual const T *proc(const T &feed, unsigned *count = NULL)
     {
-       T* a = m_band->proc(feed);
-       *a *= sin(2*M_PI*fr_shift * m_counter++);
-       return m_lowp->proce(*a);
+       count = count;
+       const T *a = m_band->proc(feed);
+       T v = a[0] * sin(2*M_PI*fr_shift * m_counter++);
+       return m_lowp->proc(v);
     }
 
 
     /*!
      */
     t_filter_shifter(std::vector<T> &bp_fir_coe, std::vector<T> &lp_fir_coe, T _fr_shift, int32_t _decimationf = 1):
-        m_band<T>(new t_filter_fir(bp_fir_coe.data(), bp_fir_coe.size(), 1)),
-        m_lowp<T>(new t_filter_fir(lp_fir_coe.data(), lp_fir_coe.size(), _decimationf)),
+        a_filter<T>(NULL, NULL, 0), //empty a_filter - only as interface
+        m_band(new t_filter_fir<T>(bp_fir_coe.data(), bp_fir_coe.size(), 1)),
+        m_lowp(new t_filter_fir<T>(lp_fir_coe.data(), lp_fir_coe.size(), _decimationf)),
         fr_shift(_fr_shift)
     {
         m_mine = true;
@@ -67,8 +69,9 @@ public:
     /*!
      */
     t_filter_shifter(a_filter<T> *bp_fir, a_filter<T> *lp_fir, T _fr_shift):
-        m_band<T>(bp_fir),
-        m_lowp<T>(lp_fir),
+        a_filter<T>(NULL, NULL, 0), //empty a_filter - only as interface
+        m_band(bp_fir),
+        m_lowp(lp_fir),
         fr_shift(_fr_shift)
     {
         m_mine = false;
@@ -76,8 +79,9 @@ public:
     }
 
     t_filter_shifter(int32_t N, const char *config = "#B=500#fs=1000", int32_t _decimationf = 1):
-        m_band<T>(new t_filter_fir(NULL, N, 1)),
-        m_lowp<T>(new t_filter_fir(NULL, N, _decimationf))
+        a_filter<T>(NULL, NULL, 0), //empty a_filter - only as interface
+        m_band(new t_filter_fir<T>(NULL, N, 1)),
+        m_lowp(new t_filter_fir<T>(NULL, N, _decimationf))
     {
         tune(config);
         m_mine = true;
@@ -85,9 +89,13 @@ public:
     }
 
     t_filter_shifter(int32_t N, const t_tf_props &p, int32_t _decimationf = 1):
-        m_band<T>(new t_filter_fir(NULL, N, 1)),
-        m_lowp<T>(new t_filter_fir(NULL, N, _decimationf))
+        a_filter<T>(NULL, NULL, 0), //empty a_filter - only as interface
+        m_band(new t_filter_fir<T>(NULL, N, 1)),
+        m_lowp(new t_filter_fir<T>(NULL, N, _decimationf))
     {
+//        m_band = dynamic_cast<a_filter<T> * >( new t_filter_fir<T>(NULL, N, 1));
+//        m_lowp = dynamic_cast<a_filter<T> * >( new t_filter_fir<T>(NULL, N, _decimationf));
+
         tune(p);
         m_mine = true;
         m_counter = 0;
