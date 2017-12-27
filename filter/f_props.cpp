@@ -21,6 +21,7 @@ t_tf_props f_str2tf(const char *s){
         s_wf_##name,
 F_PROPS_ALL
 #undef F_PROPS_IT
+        NULL
     };
 
     const char *units[] = {
@@ -28,6 +29,7 @@ F_PROPS_ALL
         #unit,
 F_PROPS_ALL
 #undef F_PROPS_IT
+        NULL
     };
 
     unsigned t, n;

@@ -1,0 +1,46 @@
+    #include <QTimer>
+    #include <QDebug>
+    #include <QCoreApplication>
+
+	#include "easylogging++.h"
+
+    #include <QVariant>
+    #include <QMap>
+    #include <QVector>
+    #include <QStringList>
+    #include <QDir>
+    #include <QPointer>
+    #include <QColor>
+	#include <QMutex>
+	#include <QWaitCondition>
+	#include <QObject>
+	#include <QFile>
+	#include <QJsonDocument>
+	#include <QSharedPointer>
+	#include <QElapsedTimer>
+
+    #include <string>
+    #include <set>
+    #include <map>
+    #include <memory>
+    #include <vector>
+    #include <unordered_map>
+    #include <array>
+    #include <bitset>
+    #include <initializer_list>
+    #include <functional>
+    #include <algorithm>
+    #include <numeric>
+    #include <iterator>
+    #include <type_traits>
+    #include <cmath>
+    #include <cassert>
+    #include <cfloat>
+    #include <complex>
+    #include <cstddef>
+    #include <cstdint>
+    #include <cstdlib>
+    #include <mutex>
+    #include <thread>
+    #include <condition_variable>
+    #include <iostream>

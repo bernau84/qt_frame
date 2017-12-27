@@ -55,31 +55,31 @@ int main(int argc, char *argv[])
     t_comm_stdte io_std(dynamic_cast<i_comm_parser *>(&nl_parser)); //cte a zapisuje do std terminalu
     t_rt_control ctrl_std(&io_std); //rizeni behu a nastaveni
 
-    ctrl_std.do_script(
-                //"::create:mic\n"              //root node
-                "::create:multi\n"              //root node
-                ":multi0:create:filter\n"       //absolute path
-                ":filter1:\n"                  //move
-                "create:playback\n"           //relative path
-                "create:rec\n"                //realtive path
-                ":multi0:start:10000\n"
-                "::pause:11000\n"
-                ":filter1:cfg:#f_ce=500#fs=8000\n"
-                ":multi0:start:10000\n"
-                "::pause:11000\n"
-                ":filter1:cfg:#f_ce=1000#fs=8000\n"
-                ":multi0:start:10000\n"
-                "::pause:11000r\n"
-                ":filter1:cfg:#f_ce=2000#fs=8000\n"
-                ":multi0:start:10000\n"
-                );
-
 //    ctrl_std.do_script(
 //                //"::create:mic\n"              //root node
 //                "::create:multi\n"              //root node
+//                ":multi0:create:filter\n"       //absolute path
+//                ":filter1:\n"                  //move
+//                "create:playback\n"           //relative path
+//                "create:rec\n"                //realtive path
+//                ":multi0:start:10000\n"
+//                "::pause:11000\n"
+//                ":filter1:cfg:#f_ce=500#fs=8000\n"
+//                ":multi0:start:10000\n"
+//                "::pause:11000\n"
+//                ":filter1:cfg:#f_ce=1000#fs=8000\n"
+//                ":multi0:start:10000\n"
+//                "::pause:11000r\n"
+//                ":filter1:cfg:#f_ce=2000#fs=8000\n"
+//                ":multi0:start:10000\n"
+//                );
+
+    ctrl_std.do_script(
+                "::create:?\n"              //root node
+//                "::create:multi\n"              //root node
 //                ":multi1:create:playback\n"       //absolute path
 //                ":multi1:start\n"
-//                );
+                );
 
 //    t_rt_audioinput aud_src("");
 //    t_rt_generator sig_src("", [](double t) -> double { return 0.8*sin(2*M_PI*2000*t); });

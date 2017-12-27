@@ -17,16 +17,16 @@ DEFINES += ELPP_QT_LOGGING    \
 #QMAKE_CXXFLAGS += -Werror=return-type
 #QMAKE_CXXFLAGS += -Werror=sequence-point
 
-# "emulates" valgrind behaviour. It's default on android
-# TODO: test also with -fstack-protector-strong?
-# NOTE: don't use -fstack-protector-all for performanse reasons.
-QMAKE_CXXFLAGS += -fstack-protector
+## "emulates" valgrind behaviour. It's default on android
+## TODO: test also with -fstack-protector-strong?
+## NOTE: don't use -fstack-protector-all for performanse reasons.
+#QMAKE_CXXFLAGS += -fstack-protector
 
-# required for windows build
-win32 {
-QMAKE_CXXFLAGS += -mno-ms-bitfields
-LIBS += -lssp
-}
+## required for windows build
+#win32 {
+#QMAKE_CXXFLAGS += -mno-ms-bitfields
+#LIBS += -lssp
+#}
 
 CONFIG += c++11
 
@@ -75,3 +75,6 @@ HEADERS += \
     frame/rt_processor.h \
     filter/filter_shifter.h \
     filter/filter_bank.h
+
+PRECOMPILED_HEADER = precompiled.h
+CONFIG += precompile_header

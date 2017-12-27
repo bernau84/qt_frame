@@ -55,7 +55,7 @@ private:
 
     a_filter<double> *_filter_factory(const QString &s_props)
     {
-        t_tf_props props = f_str2tf(s_props.toLatin1().constData());
+         t_tf_props props = f_str2tf(s_props.toLatin1().constData());
 
         //defaults
         a_filter<double>::e_type ftype = a_filter<double>::FIR_DIRECT1;

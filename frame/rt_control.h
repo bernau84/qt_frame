@@ -15,6 +15,19 @@
 #include "frame/rt_filter.h"
 #include "frame/rt_processor.h"
 
+//tabulka moznosti povelu create - seznam prvku ktere umime a jak se daji konfigurovat
+/*! \todo    IT(dsp,     t_rt_processor,         "", "TODO audio processor")\ */
+
+#define RT_CREATE_MENU()\
+    IT(sweep,   t_rt_sweep_generator,   "{\"fs\":{\"__def\":8000},\"f_0\":{\"__def\":500},\"f_1\":{\"__def\":2500},\"T\":{\"__def\":5000}}", "generator with json mandatory fs, f_0, f_1, T")\
+    IT(multi,   t_rt_multisin_generator, "{\"f_n\":{\"__def\":[250, 800, 1500]},\"A_n\":{\"__def\":[]}}", "generator with json mandatory fs, [f_x], [A_x]")\
+    IT(corr,    t_rt_harm_correlator,   "", "time based correlator")\
+    IT(mic,     t_rt_audioinput,        "", "empty for default microphone input or dedicated name/channel")\
+    IT(playback, t_rt_audiooutput,      "", "empty for default microphone input or dedicated name/channel")\
+    IT(wav,     t_rt_wavinput,          "{\"path\":{\"__def\":\"input.wav\"}}", "record as signal source")\
+    IT(rec,     t_rt_recorder,          "{\"path\":{\"__def\":\"output.wav\"}}", "record as signal sing")\
+    IT(filter,  t_rt_filter,            "{\"properties\":{\"__def\":\"#B=500#fs=8000#FILTER=FIRDIR1#WINDOW=WHANN#fc=1500\"}}", "audio filter")
+
 struct t_frame_cnode
 {
     QString     fname;
@@ -52,9 +65,15 @@ private:
     bool _validity(const QString &line, t_frame_cmd_decomp &cmd){
 
         QStringList atoms = line.split(':');
-        if(atoms.size() < 3) return false;
-        if(atoms[0] != "") return false;
-        if((cmd.no = _identify_no(atoms[1])) < 0); // return false; - nevadi kdyz jde o broadcast
+        if(atoms.size() < 3)
+        {
+            return false;
+        }
+        if(atoms[0] != "")
+        {
+            return false;
+        }
+        if((cmd.no = _identify_no(atoms[1])) < 0){;} // return false; - nevadi kdyz jde o broadcast
         if((cmd.ord = _identify_cmd(atoms[2])) < 0) return false;
         if(atoms.size() > 3) cmd.par = atoms[3];
         return true;
@@ -130,73 +149,51 @@ private:
     {
         QString path;
 
-        /*! \todo zadani custom jmena */
-
         if(cmd.par.compare("?") == 0)
         {
             QString help;
-            help += "sweep{props} - generator with json mandatory fs, f_0, f_1, T\r\n";
-            help += "multi{props} - generator with json mandatory fs, [f_x], [A_x]\r\n";
-            help += "corr{props} - time based correlator\r\n";
-            help += "mic(soundcard) - microphone input\r\n";
-            help += "playback(soundcard) - speaker outpu\r\n";
-            help += "wav(filename) - record as signal source\r\n";
-            help += "rec(filename) - record as signal sing\r\n";
-            help += "dsp(type) - audio processor\r\n";
-            help += "filter(props) - audio filter\r\n";
+
+#define IT(type, ty, def, shelp)\
+        help += #type;\
+        help += "{props} - ";\
+        help += shelp;\
+        help += "; default props are ";\
+        help += def;\
+        help += "\n";\
+
+RT_CREATE_MENU()
+
+#undef IT
+
             ccomm->query(help.toLocal8Bit(), 0);
             return true;
         }
 
         t_frame_cnode v = {"", NULL};
-        if(cmd.par.startsWith("sweep"))
+        QRegExp f("^([^{]+)({(?:.*)})?$");  //regex pro nalezeni nazvu prvku a json objektu jako parametry
+            //zachytava 1 typ, 2 param (nemusi byt)
+
+        if(f.indexIn(cmd.par) < 0)
         {
-            v.fname = QString("sweep%1").arg(cnode.size());
-            v.node =  new t_rt_sweep_generator("{\"fs\":{\"__def\":8000},"
-                                                   "\"f_0\":{\"__def\":500},"
-                                                   "\"f_1\":{\"__def\":2500},"
-                                                   "\"T\":{\"__def\":5000}}");
+            _reply_error("invalid"); //konec - nebylo validni
+            return false;
         }
-        else if(cmd.par.startsWith("multi"))
-        {
-            v.fname = QString("multi%1").arg(cnode.size()); //multisin
-            v.node =  new t_rt_multisin_generator("{\"f_n\":{\"__def\":[250, 800, 1500]},"
-                                                  "\"A_n\":{\"__def\":[]}}");
-        }
-        else if(cmd.par.startsWith("corr"))
-        {
-            v.fname = QString("corr%1").arg(cnode.size());
-            v.node = new t_rt_harm_correlator("");
-        }
-        else if(cmd.par.startsWith("mic"))
-        {
-            v.fname = QString("mic%1").arg(cnode.size());
-            v.node =  new t_rt_audioinput("");
-        }
-        else if(cmd.par.startsWith("playback"))
-        {
-            v.fname = QString("playback%1").arg(cnode.size());
-            v.node = new t_rt_audiooutput("");
-        }
-        else if(cmd.par.startsWith("filter"))
-        {
-            v.fname = QString("filter%1").arg(cnode.size());
-            QString prop = "#B=500#fs=8000#FILTER=FIRDIR1#WINDOW=WHANN#fc=3500";  //default
-            if(!cmd.par.isEmpty()) prop = cmd.par;
-            v.node = new t_rt_filter(QString("{\"properties\":{\"__def\":\"%1\"}}").arg(prop));
-        }
-        else if(cmd.par.startsWith("wav"))
-        {
-            v.fname = QString("wav%1").arg(cnode.size());
-            path = (!cmd.par.isEmpty()) ? QString("{\"path\":{\"__def\":\"%1\"}}").arg(cmd.par) : "";
-            v.node = new t_rt_audiooutput(path);
-        }
-        else if(cmd.par.startsWith("rec"))
-        {
-            v.fname = QString("rec%1").arg(cnode.size());
-            path = (!cmd.par.isEmpty()) ? QString("{\"path\":{\"__def\":\"%1\"}}").arg(cmd.par) : "";
-            v.node = new t_rt_recorder(path);
-        }
+
+        /*! \todo zadani custom jmena - zatim dano poradim */
+        v.fname = f.cap(0) + QString("%1").arg(cnode.size());
+
+        if(1){}
+
+#define IT(type, ty, def, shelp)\
+        else if(!f.cap(0).compare(#type))\
+        {\
+            QString param = (f.captureCount() > 1) ? f.cap(1) : def;\
+            v.node = new ty(param);\
+        }\
+
+RT_CREATE_MENU()
+
+#undef IT
 
         if(v.node)
         {
