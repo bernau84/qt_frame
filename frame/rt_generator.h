@@ -82,16 +82,16 @@ private:
                 m_data->t1 += ms_per/1000;
 
                 QSharedPointer<i_rt_exchange> pp(m_data);
-                LOG(INFO) << m_data->t0 << "[s]/"
-                          << x.size() << "samples out";
+//                LOG(INFO) << m_data->t0 << "[s]/"
+//                          << x.size() << "samples out";
 
                 emit update(pp);
             }
         }
 
         int cached = xi - x.begin();
-        if(cached) LOG(INFO) << (ms_proc - ms_per*cached)/1000.0 
-                             << "[s]/" << cached << "samples cached";
+//        if(cached) LOG(INFO) << (ms_proc - ms_per*cached)/1000.0
+//                             << "[s]/" << cached << "samples cached";
         return cached;
     }
 
@@ -115,7 +115,15 @@ public slots:
     virtual void on_stop(int p){
 
         Q_UNUSED(p);
-        killTimer(id_timer);
+        if(id_timer)
+        {
+            killTimer(id_timer);
+            id_timer = 0;
+        }
+        else
+        {
+            LOG(ERROR) << "timer not running!";
+        }
     }
 
 public:

@@ -47,7 +47,7 @@ private:
 
                 m_it = m_buffer.begin();
                 m_output->write((const char *)m_buffer.constData(), m_buffer.size()*sizeof(int16_t));
-                LOG(INFO) << m_buffer.size() << "samples playback";
+                //LOG(INFO) << m_audioOutput->bufferSize() - m_audioOutput->bytesFree() << "samples playback queued";
             }
         }
 
@@ -57,8 +57,6 @@ private:
 public:
     /*!  */
     void on_start(int p){
-
-        Q_UNUSED(p);
 
         if(m_audioOutput)
             m_audioOutput->stop();

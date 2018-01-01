@@ -62,14 +62,14 @@ private:
         e_win fwin = WHANN;
         int ford = 64;
         int fdecim = 1;
-        t_filter_avr<double>::e_filter_avr fmode;
+        t_filter_avr<double>::e_filter_avr fmode = t_filter_avr<double>::AUTO;
         int fTA = 0;
 
         //custom par
         if(props.find(s_wf_RES) != props.end()) fdecim = props[s_wf_RES];
-        if(props.find(s_wf_FILTER) != props.end()) ftype = (a_filter<double>::e_type)props[s_wf_FILTER];
-        if(props.find(s_wf_WINDOW) != props.end()) fwin = (e_win)props[s_wf_WINDOW];
-        if(props.find(s_wf_AVR) != props.end()) fmode = (t_filter_avr<double>::e_filter_avr)props[s_wf_AVR];
+        if(props.find(s_wf_FILTER) != props.end()) ftype = static_cast<a_filter<double>::e_type>(props[s_wf_FILTER]);
+        if(props.find(s_wf_WINDOW) != props.end()) fwin = static_cast<e_win>(props[s_wf_WINDOW]);
+        if(props.find(s_wf_AVR) != props.end()) fmode = static_cast<t_filter_avr<double>::e_filter_avr>(props[s_wf_AVR]);
         if(props.find(s_wf_TA) != props.end()) fTA = props[s_wf_TA];
         if(props.find(s_wf_N) != props.end()) ford = props[s_wf_N];
 
@@ -143,9 +143,9 @@ private:
                     continue;
 
                 QSharedPointer<i_rt_exchange> pp(m_data);
-                LOG(INFO) << m_data->t0 << "[s]/"
-                          << m_data->a.size()
-                          << "samples filtered-out";
+//                LOG(INFO) << m_data->t0 << "[s]/"
+//                          << m_data->a.size()
+//                          << "samples filtered-out";
 
                 emit update(pp);
                 m_data = NULL;

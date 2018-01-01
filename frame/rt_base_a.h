@@ -80,7 +80,7 @@ public slots:
    /*! data processor */
    void on_update(QSharedPointer<i_rt_exchange> d){
 
-       TIMED_FUNC(t1);
+//       TIMED_FUNC(t1);
        if(d.isNull()) proc(NULL);
         else proc(d.data());
    }

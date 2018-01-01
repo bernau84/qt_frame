@@ -60,31 +60,36 @@ public:
     }
 
     /* modifikace filtru posunem
-     * */
+     */
     virtual void tune(t_tf_props &p)
     {
         t_tf_props::iterator it;
         if(p.end() != (it = p.find(s_wf_fs)))
-            fshift((double)it->second, num);
+        {
+            num = den; //vezmem original (vuci nemu resime shift)
+            fshift(static_cast<double>(it->second), num);
+        }
     }
 
     /* obecna modifikace za behu
      * */
-    void tune(const a_filter<T> &coe, int32_t _decimationf = 1){
-
-        num = coe;   //neresetujem - muze se lisit i delka; nic se nedeje, v pameti je jen delay line
+    void tune(const std::vector<T> &coe, int32_t _decimationf = 1)
+    {
+        den = num = coe;   //neresetujem - muze se lisit i delka; nic se nedeje, v pameti je jen delay line
+            //v den jako zaloha kvuli shiftu
         decimationf = _decimationf;
     }
 
     t_filter_fir(const a_filter<T> &src)
-                   :a_filter<T>(src){
-
+                   :a_filter<T>(src)
+    {
         typef = a_filter<T>::FIR_DIRECT1;
     }
 
     t_filter_fir(const T *_num, int32_t _N, int32_t _decimationf = 1)
-                   :a_filter<T>(_num, NULL, _N, _decimationf){
-
+                   :a_filter<T>(_num, _num, _N, _decimationf)
+    {
+        //v den jako zaloha kvuli shiftu
         typef = a_filter<T>::FIR_DIRECT1;
     }
 

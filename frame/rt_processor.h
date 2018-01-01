@@ -108,9 +108,9 @@ private:
                 continue;
 
             QSharedPointer<i_rt_exchange> pp(m_data);
-            LOG(INFO) << m_data->t0 << "[s]/"
-                      << m_data->a.size()
-                      << "samples processed-out";
+//            LOG(INFO) << m_data->t0 << "[s]/"
+//                      << m_data->a.size()
+//                      << "samples processed-out";
 
             emit update(pp);
             m_data = NULL;

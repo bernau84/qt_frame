@@ -4,6 +4,8 @@
 #include <QString>
 #include <QMap>
 #include <QTimer>
+#include <QRegularExpressionMatch>
+#include <QRegularExpression>
 
 #include "rt_base_a.h"
 #include "control/i_comm_io_generic.h"
@@ -20,13 +22,13 @@
 
 #define RT_CREATE_MENU()\
     IT(sweep,   t_rt_sweep_generator,   "{\"fs\":{\"__def\":8000},\"f_0\":{\"__def\":500},\"f_1\":{\"__def\":2500},\"T\":{\"__def\":5000}}", "generator with json mandatory fs, f_0, f_1, T")\
-    IT(multi,   t_rt_multisin_generator, "{\"f_n\":{\"__def\":[250, 800, 1500]},\"A_n\":{\"__def\":[]}}", "generator with json mandatory fs, [f_x], [A_x]")\
+    IT(multi,   t_rt_multisin_generator, "{\"f_n\":{\"__def\":[500, 1000, 2000]},\"A_n\":{\"__def\":[]}}", "generator with json mandatory fs, [f_x], [A_x]")\
     IT(corr,    t_rt_harm_correlator,   "", "time based correlator")\
     IT(mic,     t_rt_audioinput,        "", "empty for default microphone input or dedicated name/channel")\
     IT(playback, t_rt_audiooutput,      "", "empty for default microphone input or dedicated name/channel")\
     IT(wav,     t_rt_wavinput,          "{\"path\":{\"__def\":\"input.wav\"}}", "record as signal source")\
     IT(rec,     t_rt_recorder,          "{\"path\":{\"__def\":\"output.wav\"}}", "record as signal sing")\
-    IT(filter,  t_rt_filter,            "{\"properties\":{\"__def\":\"#B=500#fs=8000#FILTER=FIRDIR1#WINDOW=WHANN#fc=1500\"}}", "audio filter")
+    IT(filter,  t_rt_filter,            "{\"properties\":{\"__def\":\"#N=64#B=500#fs=8000#FILTER=FIRDIR1#WINDOW=WHANN\"}}", "audio filter")
 
 struct t_frame_cnode
 {
@@ -59,7 +61,7 @@ private:
     t_frame_map_it  ctopo;  //topologie nodu
     i_comm_generic  *ccomm;  //komunikator
 
-    int m_delay;
+    volatile int m_delay;
     QStringList m_script;
 
     bool _validity(const QString &line, t_frame_cmd_decomp &cmd){
@@ -170,25 +172,26 @@ RT_CREATE_MENU()
         }
 
         t_frame_cnode v = {"", NULL};
-        QRegExp f("^([^{]+)({(?:.*)})?$");  //regex pro nalezeni nazvu prvku a json objektu jako parametry
+        QRegularExpression f("^([^{]+)({(?:.*)})?$");  //regex pro nalezeni nazvu prvku a json objektu jako parametry
+        //QRegularExpression f("qr//^([^{]+)({(?:.*)})?$//p");
             //zachytava 1 typ, 2 param (nemusi byt)
-
-        if(f.indexIn(cmd.par) < 0)
+        QRegularExpressionMatch res = f.match(cmd.par);
+        if(!res.hasMatch())
         {
             _reply_error("invalid"); //konec - nebylo validni
             return false;
         }
 
         /*! \todo zadani custom jmena - zatim dano poradim */
-        v.fname = f.cap(0) + QString("%1").arg(cnode.size());
+        v.fname = res.captured(1) + QString("%1").arg(cnode.size());
 
-        if(1){}
+        if(0){}
 
 #define IT(type, ty, def, shelp)\
-        else if(!f.cap(0).compare(#type))\
+        else if(!res.captured(1).compare(#type))\
         {\
-            QString param = (f.captureCount() > 1) ? f.cap(1) : def;\
-            v.node = new ty(param);\
+            QString param = (res.lastCapturedIndex() > 1) ? res.captured(2) : def;\
+            v.node = dynamic_cast<a_rt_base *>(new ty(param));\
         }\
 
 RT_CREATE_MENU()
@@ -224,7 +227,7 @@ RT_CREATE_MENU()
         else
         {
             int to = _identify_no(cmd.par);
-            if((to >= 0) && (to < (int)cnode.size()))
+            if((to >= 0) && (to < static_cast<int>(cnode.size())))
             {
                 cnode[cmd.no].node->connect(cnode[to].node); //connect(zdroj)
                 _update_topo(to, cmd.no); //zdroj, pijavice - aktualizace topologie
@@ -317,10 +320,13 @@ private slots:
     //sem pristane signal od io
     void on_newline(int ord, const QByteArray &line){
 
-        ord = ord;
+        (void)ord;
+
 
         //cmd-control process
         QString loc = QString::fromLocal8Bit(line.data(), line.size());
+        LOG(INFO) << loc;
+
         t_frame_cmd_decomp cmd;
         int dl;
         QStringList list = loc.split("&");  //rozpadnout na '&' sekce
