@@ -45,7 +45,8 @@ public:
                 while(running/* && std::cin*/)
                 {
                     std::string s;
-                    std::cin >> s;
+                    //std::cin >> s; - nevyhoda ze se nevrati s praznym radkem \r\n
+                    getline(std::cin, s);
 
                     std::unique_lock<std::mutex> tl(mu);
                     readed.append(s);

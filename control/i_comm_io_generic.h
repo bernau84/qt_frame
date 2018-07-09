@@ -101,7 +101,8 @@ public:
 
     i_comm_generic(i_comm_parser *_parser, QObject *parent = NULL) :
         QObject(parent),
-        parser(_parser)
+        parser(_parser),
+        m_local_echo(false)
     {
         if(VI_COMM_REFRESH_RT)
             this->startTimer(VI_COMM_REFRESH_RT);

@@ -22,7 +22,7 @@
 
 #define RT_CREATE_MENU()\
     IT(sweep,   t_rt_sweep_generator,   "{\"fs\":{\"__def\":8000},\"f_0\":{\"__def\":500},\"f_1\":{\"__def\":2500},\"T\":{\"__def\":5000}}", "generator with json mandatory fs, f_0, f_1, T")\
-    IT(multi,   t_rt_multisin_generator, "{\"f_n\":{\"__def\":[500, 1000, 2000]},\"A_n\":{\"__def\":[]}}", "generator with json mandatory fs, [f_x], [A_x]")\
+    IT(multi,   t_rt_multisin_generator,"{\"f_n\":{\"__def\":[500, 1000, 2000]},\"A_n\":{\"__def\":[]}}", "generator with json mandatory fs, [f_x], [A_x]")\
     IT(corr,    t_rt_harm_correlator,   "", "time based correlator")\
     IT(mic,     t_rt_audioinput,        "", "empty for default microphone input or dedicated name/channel")\
     IT(playback, t_rt_audiooutput,      "", "empty for default microphone input or dedicated name/channel")\
@@ -131,10 +131,26 @@ private:
 
         if(property_name[0] == '#')
         {   //nenastavujeme konkretrni cfg property ale propery "parameters"
-            //tyka se hlaven asi filtru
-            //bypass
+            //tyka se hlaven asi jen filtru -> bypass
             property_name = "properties";
             property_value = cmd.par;
+        }
+        else if(property_value.canConvert(QMetaType::QByteArray))
+        {   //musi to byt json hodnota nebo pole
+            QJsonDocument jprop;
+            jprop.fromBinaryData(property_value.toByteArray());
+            if(jprop.isObject())
+            {
+                property_value = jprop.object(); // == json::value
+            }
+            else if(jprop.isArray())
+            {
+                property_value = jprop.array(); // == json::value
+            }
+        }
+        else
+        {
+            //predpokladame primitiv - double
         }
 
         QMetaObject::invokeMethod(cnode[cmd.no].node,
@@ -281,6 +297,7 @@ RT_CREATE_MENU()
         }
         reply += "\r\n";
         ccomm->query(reply.toLocal8Bit(), 0);  //guery bez cekani na odpoved je reply
+        ccomm->query(cpath.toLocal8Bit(), 0);
     }
 
     void _reply_error(const char *detail = NULL)
@@ -294,6 +311,7 @@ RT_CREATE_MENU()
         }
         reply += "\r\n";
         ccomm->query(reply.toLocal8Bit(), 0);  //guery bez cekani na odpoved je reply
+        ccomm->query(cpath.toLocal8Bit(), 0);
     }
 
 
@@ -305,6 +323,9 @@ private slots:
         while(m_script.size() > 0)
         { //a dalsi
             QString s = m_script.first();
+            //LOG(INFO) << s;
+            if(ccomm) ccomm->on_write(s.toLocal8Bit() + "\r\n");  //localecho pokud je kam
+
             on_newline(-1, s.toLocal8Bit());
             m_script.removeFirst();
 
@@ -322,14 +343,14 @@ private slots:
 
         (void)ord;
 
-
-        //cmd-control process
+        //cmd-control processB
         QString loc = QString::fromLocal8Bit(line.data(), line.size());
-        LOG(INFO) << loc;
-
-        t_frame_cmd_decomp cmd;
-        int dl;
         QStringList list = loc.split("&");  //rozpadnout na '&' sekce
+        if(list.isEmpty())
+        {
+            _reply_ok();
+            return;
+        }
 
         foreach(QString i, list){
 
@@ -345,6 +366,9 @@ private slots:
                 _reply_ok();
                 return;
             }
+
+            t_frame_cmd_decomp cmd;
+            int dl;
 
             //test loc
             if(!_validity(i, cmd))
@@ -389,6 +413,8 @@ private slots:
             {
                 _help();
             }
+
+            _reply_ok();
         }
     }
 
