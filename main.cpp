@@ -62,12 +62,14 @@ int main(int argc, char *argv[])
                 ":filter1:\n"                  //move
                 "create:playback\n"           //relative path
                 "create:rec\n"                //realtive path
-                ":filter1:cfg:#B=500#f_ce=500#fs=8000\n"  //B zopakujeme aby sme mohli filter prepocitat cely
+                ":filter1:cfg:#B=250#f_ce=500#fs=8000\n"  //B zopakujeme aby sme mohli filter prepocitat cely
                 ":multi0:start\n"
-                "::pause:12000\n"
-                ":filter1:cfg:#B=500#f_ce=1000#fs=8000\n"
                 "::pause:4000\n"
-                ":filter1:cfg:#B=500#f_ce=2000#fs=8000\n"
+                ":filter1:cfg:#B=200#f_ce=1000#fs=8000\n"
+                "::pause:4000\n"
+                ":filter1:cfg:#B=150#f_ce=2000#fs=8000\n"
+                "::pause:4000\n"
+                ":filter1:cfg:#B=100#f_ce=250#fs=8000\n"
                 "::pause:4000\n"
                 ":multi0:stop\n"
                  );

@@ -160,6 +160,16 @@ private:
     QJsonArray f_n;
     QJsonArray A_n;
 
+    virtual int reload(int p){
+        Q_UNUSED(p);
+
+        if(par.ask("f_n")) f_n = par["f_n"].get().toArray();
+        if(par.ask("A_n")) A_n = par["A_n"].get().toArray();
+        if(par.ask("fs")) fs = par["fs"].get().toInt();
+
+        return 0;
+    }
+
     double a(double t)
     {
         double a_t = 0;
@@ -182,10 +192,6 @@ public:
         f_n = {1000}; //{1000, 2000};
         A_n = {0.99}; //{0.3, 0.2};
         fs = 8000;
-
-        if(par.ask("f_n")) f_n = par["f_n"].get().toArray();
-        if(par.ask("A_n")) A_n = par["A_n"].get().toArray();
-        if(par.ask("fs")) fs = par["fs"].get().toInt();
     }
 
     virtual ~t_rt_harm_correlator(){}
