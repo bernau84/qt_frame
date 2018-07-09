@@ -152,6 +152,17 @@ private:
     int f_1;
     int T;
 
+    virtual int reload(int p){
+        Q_UNUSED(p);
+
+        if(par.ask("f_0")) f_0 = par["f_0"].get().toInt();
+        if(par.ask("f_1")) f_1 = par["f_0"].get().toInt();
+        if(par.ask("T")) T = par["T"].get().toInt();
+        if(par.ask("fs")) fs = par["fs"].get().toInt();
+
+        return 0;
+    }
+
     double a(double t)
     {
         t = fmod(t, T);
@@ -168,10 +179,7 @@ public:
         fs = 8000;
         T = 10000;
 
-        if(par.ask("f_0")) f_0 = par["f_0"].get().toInt();
-        if(par.ask("f_1")) f_1 = par["f_0"].get().toInt();
-        if(par.ask("T")) T = par["T"].get().toInt();
-        if(par.ask("fs")) fs = par["fs"].get().toInt();
+        reload(0);
     }
 
     virtual ~t_rt_sweep_generator(){}
@@ -208,8 +216,8 @@ public:
     t_rt_multisin_generator(const QString &js_config, QObject *parent = NULL):
       t_rt_generator(js_config, std::bind(&t_rt_multisin_generator::a, this, std::placeholders::_1), parent)
     {
-        f_n = {100, 250, 400, 1000, 2000, 3000}; //{1000, 2000};
-        A_n = {0.3, 0.2, 0.1, 0.08, 0.05, 0.02}; //{0.3, 0.2};
+        f_n = {1000};
+        A_n = {0.5};
         fs = 8000;
 
         if(par.ask("f_n")) f_n = par["f_n"].get().toArray();

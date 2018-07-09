@@ -81,8 +81,13 @@ public slots:
    void on_update(QSharedPointer<i_rt_exchange> d){
 
 //       TIMED_FUNC(t1);
-       if(d.isNull()) proc(NULL);
-        else proc(d.data());
+       if(d.isNull())
+       {
+           proc(NULL);
+           return;
+       }
+
+       proc(d.data());
    }
 
    /*! reconfiguration */

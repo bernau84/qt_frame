@@ -47,7 +47,7 @@ public:
     */
     virtual const T *proc(const T &feed, unsigned *count = NULL)
     {
-       count = count;
+       (void)count;
        const T *a = m_band->proc(feed);
        T v = a[0] * sin(2*M_PI*fr_shift * m_counter++);
        return m_lowp->proc(v);
